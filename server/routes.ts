@@ -109,6 +109,31 @@ function translateEventName(eventName: string): string {
   return translated;
 }
 
+// Palabras clave para categorizar eventos
+const categoryKeywords = {
+  employment: ['employment', 'unemployment', 'jobless', 'payroll', 'jobs', 'labor', 'empleo', 'desempleo', 'nómina'],
+  inflation: ['cpi', 'ppi', 'inflation', 'price index', 'prices', 'inflación', 'precios', 'ipc', 'ipp'],
+  monetary: ['interest rate', 'fed', 'fomc', 'central bank', 'monetary policy', 'ecb', 'boc', 'boe', 'boj', 'tasa de interés', 'política monetaria', 'banco central'],
+  manufacturing: ['manufacturing', 'pmi', 'industrial production', 'factory', 'manufactura', 'producción industrial', 'fábrica'],
+  services: ['services', 'retail sales', 'consumer spending', 'servicios', 'ventas minoristas', 'gasto del consumidor'],
+  energy: ['oil', 'energy', 'crude', 'natural gas', 'petróleo', 'energía', 'crudo', 'gas'],
+  confidence: ['confidence', 'sentiment', 'survey', 'confianza', 'sentimiento', 'encuesta'],
+};
+
+// Función para determinar la categoría de un evento
+function categorizeEvent(eventName: string): string[] {
+  const categories: string[] = [];
+  const lowerEventName = eventName.toLowerCase();
+  
+  for (const [category, keywords] of Object.entries(categoryKeywords)) {
+    if (keywords.some(keyword => lowerEventName.includes(keyword.toLowerCase()))) {
+      categories.push(category);
+    }
+  }
+  
+  return categories;
+}
+
 interface FinnworldsEvent {
   id?: string;
   date: string;
@@ -126,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Economic events endpoint
   app.get("/api/events", async (req, res) => {
     try {
-      const { countries, impacts, dateRange, search } = req.query;
+      const { countries, impacts, categories, dateRange, search } = req.query;
 
       // Validate API key presence
       if (!FINNWORLDS_API_KEY) {
@@ -283,6 +308,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           previous: event.previous || null,
         };
       });
+
+      // Apply category filter if specified
+      if (categories && typeof categories === "string" && categories.trim()) {
+        const selectedCategories = categories.split(',').map(c => c.trim());
+        normalizedEvents = normalizedEvents.filter((event) => {
+          const eventCategories = categorizeEvent(event.event);
+          return selectedCategories.some(cat => eventCategories.includes(cat));
+        });
+      }
 
       // Apply search filter if specified
       if (search && typeof search === "string" && search.trim()) {

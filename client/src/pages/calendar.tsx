@@ -32,6 +32,9 @@ export default function CalendarPage() {
   if (filters.impacts && filters.impacts.length > 0) {
     queryParams.set("impacts", filters.impacts.join(","));
   }
+  if (filters.categories && filters.categories.length > 0) {
+    queryParams.set("categories", filters.categories.join(","));
+  }
   if (filters.dateRange) {
     queryParams.set("dateRange", filters.dateRange);
   }

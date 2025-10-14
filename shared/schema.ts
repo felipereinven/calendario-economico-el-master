@@ -18,10 +18,24 @@ export const economicEventSchema = z.object({
 
 export type EconomicEvent = z.infer<typeof economicEventSchema>;
 
+// Economic categories
+export const economicCategories = [
+  { value: "employment", label: "Empleo", icon: "👥" },
+  { value: "inflation", label: "Inflación", icon: "📈" },
+  { value: "monetary", label: "Política Monetaria", icon: "🏛️" },
+  { value: "manufacturing", label: "Manufactura", icon: "🏭" },
+  { value: "services", label: "Servicios", icon: "🔔" },
+  { value: "energy", label: "Energía", icon: "⚡" },
+  { value: "confidence", label: "Confianza del Consumidor", icon: "😊" },
+] as const;
+
+export type EconomicCategory = typeof economicCategories[number]["value"];
+
 // Filter options
 export const filterOptionsSchema = z.object({
   countries: z.array(z.string()).optional(),
   impacts: z.array(z.enum(["high", "medium", "low"])).optional(),
+  categories: z.array(z.string()).optional(),
   dateRange: z.enum(["today", "thisWeek", "nextWeek", "thisMonth"]).optional(),
   search: z.string().optional(),
   timezone: z.string().optional(),

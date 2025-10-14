@@ -1,4 +1,4 @@
-import { type FilterOptions, countries } from "@shared/schema";
+import { type FilterOptions, countries, economicCategories } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown } from "lucide-react";
+import { Search, ChevronDown, TrendingUp } from "lucide-react";
 import { useState } from "react";
 
 interface FilterControlsProps {
@@ -46,6 +46,14 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       ? current.filter((i) => i !== impact)
       : [...current, impact];
     onFilterChange({ impacts: updated });
+  };
+
+  const toggleCategory = (category: string) => {
+    const current = filters.categories || [];
+    const updated = current.includes(category)
+      ? current.filter((c) => c !== category)
+      : [...current, category];
+    onFilterChange({ categories: updated });
   };
 
   const handleSearchChange = (value: string) => {
@@ -94,6 +102,58 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
                 >
                   <span className="font-mono text-xs mr-2 text-muted-foreground">{country.code}</span>
                   {country.name}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Category Filter */}
+        <div className="flex-1 min-w-0">
+          <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+            Categoría Económica
+          </label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                data-testid="dropdown-category"
+              >
+                <div className="flex items-center gap-2 truncate">
+                  <TrendingUp className="h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {filters.categories && filters.categories.length > 0
+                      ? `${filters.categories.length} seleccionadas`
+                      : "Todas las categorías"}
+                  </span>
+                </div>
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 z-[200]" align="start">
+              <DropdownMenuCheckboxItem
+                checked={!filters.categories || filters.categories.length === 0}
+                onCheckedChange={() => onFilterChange({ categories: [] })}
+                data-testid="checkbox-category-all"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base">📊</span>
+                  <span className="font-semibold">Todas las categorías</span>
+                </div>
+              </DropdownMenuCheckboxItem>
+              <div className="my-1 h-px bg-border" />
+              {economicCategories.map((category) => (
+                <DropdownMenuCheckboxItem
+                  key={category.value}
+                  checked={filters.categories?.includes(category.value)}
+                  onCheckedChange={() => toggleCategory(category.value)}
+                  data-testid={`checkbox-category-${category.value}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{category.icon}</span>
+                    <span>{category.label}</span>
+                  </div>
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>
@@ -164,6 +224,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       {/* Active Filters Summary */}
       {((filters.countries && filters.countries.length > 0) ||
         (filters.impacts && filters.impacts.length > 0) ||
+        (filters.categories && filters.categories.length > 0) ||
         filters.search) && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">Filtros activos:</span>
@@ -172,6 +233,15 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
             return country ? (
               <Badge key={code} variant="secondary">
                 {country.code}
+              </Badge>
+            ) : null;
+          })}
+          {filters.categories?.map((categoryValue) => {
+            const category = economicCategories.find((c) => c.value === categoryValue);
+            return category ? (
+              <Badge key={categoryValue} variant="secondary" className="gap-1">
+                <span>{category.icon}</span>
+                {category.label}
               </Badge>
             ) : null;
           })}
