@@ -90,7 +90,7 @@ export function NotificationSettings({
           ) : (
             <BellOff className="w-4 h-4 mr-2" />
           )}
-          Alerts
+          Alertas
           {newEventCount > 0 && (
             <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full" data-testid="badge-new-events">
               {newEventCount > 9 ? '9+' : newEventCount}
@@ -100,9 +100,9 @@ export function NotificationSettings({
       </DialogTrigger>
       <DialogContent data-testid="dialog-notifications">
         <DialogHeader>
-          <DialogTitle>Event Notifications</DialogTitle>
+          <DialogTitle>Notificaciones de Eventos</DialogTitle>
           <DialogDescription>
-            Get notified when new high-impact economic events are detected
+            Recibe notificaciones cuando se detecten nuevos eventos económicos de alto impacto
           </DialogDescription>
         </DialogHeader>
 
@@ -110,9 +110,9 @@ export function NotificationSettings({
           {/* Enable/Disable Notifications */}
           <div className="flex items-center justify-between">
             <Label htmlFor="notifications-enabled" className="flex-1">
-              <div className="font-medium">Enable Notifications</div>
+              <div className="font-medium">Activar Notificaciones</div>
               <div className="text-sm text-muted-foreground">
-                Receive browser notifications for new events
+                Recibe notificaciones del navegador para nuevos eventos
               </div>
             </Label>
             <Switch
@@ -126,20 +126,20 @@ export function NotificationSettings({
 
           {permission === "denied" && (
             <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-              Browser notifications are blocked. Please enable them in your browser settings.
+              Las notificaciones del navegador están bloqueadas. Por favor, actívalas en la configuración de tu navegador.
             </div>
           )}
 
           {permission === "default" && !enabled && (
             <div className="p-3 rounded-md bg-muted text-sm">
-              Click the toggle above to enable notifications and grant permission.
+              Haz clic en el interruptor de arriba para activar las notificaciones y otorgar permisos.
             </div>
           )}
 
           {/* Impact Levels */}
           {enabled && permission === "granted" && (
             <div className="space-y-3">
-              <Label>Notify for these impact levels:</Label>
+              <Label>Notificar para estos niveles de impacto:</Label>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="impact-high" className="flex items-center gap-2 cursor-pointer">
@@ -148,7 +148,7 @@ export function NotificationSettings({
                       className="bg-impact-high/20 text-impact-high border-impact-high/30"
                     >
                       <span className="w-2 h-2 rounded-full bg-impact-high mr-1.5" />
-                      High Impact
+                      Alto Impacto
                     </Badge>
                   </Label>
                   <Switch
@@ -166,7 +166,7 @@ export function NotificationSettings({
                       className="bg-impact-medium/20 text-impact-medium border-impact-medium/30"
                     >
                       <span className="w-2 h-2 rounded-full bg-impact-medium mr-1.5" />
-                      Medium Impact
+                      Impacto Medio
                     </Badge>
                   </Label>
                   <Switch
@@ -184,7 +184,7 @@ export function NotificationSettings({
                       className="bg-impact-low/20 text-impact-low border-impact-low/30"
                     >
                       <span className="w-2 h-2 rounded-full bg-impact-low mr-1.5" />
-                      Low Impact
+                      Bajo Impacto
                     </Badge>
                   </Label>
                   <Switch

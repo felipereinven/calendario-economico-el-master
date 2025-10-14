@@ -8,31 +8,44 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
-- **October 14, 2025**: ✅ Extended MVP - Core features + Notifications & Export
-  - **Data Layer**: Economic event schema with TypeScript interfaces and Zod validation
-  - **Backend**: Express.js proxy server with Finnworlds API integration
+- **October 14, 2025**: ✅ Full Spanish Translation & Redesign Complete
+  - **Backend Changes**:
+    - Removed ALL fallback/simulated data - application now shows clear errors when API fails (no mock data)
+    - Returns 500 error with Spanish message when Finnworlds API unavailable
     - Secure API key management via environment variables
     - Query parameter forwarding (countries, impacts, dateRange, search, timezone)
     - Comprehensive error handling (401/403 authentication errors)
-    - Fallback to sample data when API unavailable
-    - Defensive time parsing to prevent frontend crashes
-  - **Frontend Components**:
-    - Filter Controls: Multi-select country dropdown, impact level toggles, time period tabs, global search
-    - Events Table: Responsive table with timezone-aware display, impact indicators, hover states
-    - Timezone Selector: Automatic detection with manual override (floating action button)
-    - Auto-Refresh: Configurable intervals (Off/30s/1m/5m) with manual refresh and last-updated timestamp
-    - Notifications: Browser notifications for new high-impact events with badge counter
-    - CSV Export: Download filtered events with timezone-aware formatting
-  - **UI/UX Polish**:
-    - Professional design following Investing.com aesthetic
-    - Sticky filter controls with proper z-index hierarchy
-    - Loading, error, and empty states with appropriate messaging
+  
+  - **Frontend UI Redesign** (based on user's reference image):
+    - **Header**: "El Master - Calendario Económico Global" with logo icon
+    - **Status Badges**: Real-time event counters (Alta/Media/Baja) in header
+    - **Error Banner**: Prominent red-bordered banner when API fails (with SVG icon, no emojis)
+    - **Filter Section**: "Centro de Control - Filtros Avanzados" with icon
+    - **Improved States**: Enhanced error/empty states with "Intentar de nuevo" button
+    - All backgrounds using bg-card, bg-muted for visual hierarchy
+  
+  - **Complete Spanish Translation**:
+    - All UI labels, buttons, and messages translated
+    - Filter controls: "País", "Impacto", "Buscar eventos..."
+    - Notification dialog: "Alertas", "Notificaciones de Eventos", "Activar Notificaciones"
+    - Time periods: "Hoy", "Esta Semana", "Próxima Semana", "Este Mes"
+    - Error messages: "Error al cargar los datos económicos desde Finnworlds API..."
+    - Timezone selector in Spanish
+    - NO English text anywhere in the application
+  
+  - **Features Removed**:
+    - CSV Export functionality completely removed (button and code)
+  
+  - **Technical Improvements**:
+    - Fixed dropdown z-index (z-[200]) to overlay properly
     - All interactive elements have data-testid attributes for testing
-    - No emoji usage - using Lucide icons and proper text throughout
-  - **Testing**: E2E tests passed validating filters, search, timezone, responsive design, auto-refresh, notifications, and export functionality
+    - No emoji usage - SVG icons only (Lucide icons and inline SVG)
+    - Sticky positioning with proper z-index hierarchy
+  
+  - **Testing**: E2E tests passed validating Spanish translation, redesigned UI, filters, timezone, dropdown z-index, and CSV removal
 
   **Known Limitations:**
-  - Timezone handling: Event times from API are parsed as ISO strings without explicit timezone metadata. Both table display and CSV export apply the same timezone conversion logic for consistency, but accuracy depends on API's source timezone (assumed to be browser-local time). Future enhancement: confirm API timezone format and implement proper timezone conversion.
+  - Timezone handling: Event times from API are parsed as ISO strings without explicit timezone metadata. Display applies timezone conversion, but accuracy depends on API's source timezone (assumed to be browser-local time). Future enhancement: confirm API timezone format.
   - Watchlist feature: Backend infrastructure complete (PostgreSQL database, API endpoints, session management) but frontend UI not implemented due to time constraints. Ready for frontend development.
 
 ## Watchlist/Favorites Feature Status
