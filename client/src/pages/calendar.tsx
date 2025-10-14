@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw, Clock } from "lucide-react";
 import { format } from "date-fns";
+import logoElMaster from "@assets/cropped-logo-para-app-el-master-dorado-sin-fondo-2_1760415748004.png";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -95,10 +96,13 @@ export default function CalendarPage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <img 
+                  src={logoElMaster} 
+                  alt="El Master Logo" 
+                  className="w-full h-full object-contain"
+                  data-testid="logo-el-master"
+                />
               </div>
               <div>
                 <h1 className="text-base sm:text-xl font-bold text-foreground">
