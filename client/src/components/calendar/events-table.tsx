@@ -165,8 +165,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                   <td className="px-4 py-4 whitespace-nowrap" data-testid={`text-country-${index}`}>
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{getCountryFlag(event.country)}</span>
-                      <span className="text-sm font-mono text-foreground font-medium">{event.country}</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">{getCountryName(event.country)}</span>
+                      <span className="text-sm text-foreground font-medium">{getCountryName(event.country)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-4 text-sm text-foreground" data-testid={`text-event-${index}`}>

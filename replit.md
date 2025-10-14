@@ -43,6 +43,21 @@ This application serves as an interactive Global Economic Calendar that displays
     - ✅ Ejemplo: "Hoy" = 1 día, "Esta Semana" = 7 días, "Este Mes" = 14 días (desde hoy)
     - ✅ Sistema optimizado con Promise.all() con límite de ~154 consultas paralelas (14 días × 11 países)
 
+- **October 14, 2025** (Update 7): ✅ Sistema de Traducción Mejorado
+  - **Traducción Automática Ampliada**:
+    - ✅ Diccionario de traducción expandido a 200+ términos económicos y financieros
+    - ✅ Traduce automáticamente la mayoría de nombres de eventos de inglés a español
+    - ✅ Términos cubiertos: indicadores económicos, bancos centrales, empleo, inflación, finanzas, mercados, plurales
+    - ✅ Ejemplos de traducción:
+      - "3-Month Bill Auction" → "3-Mes Bono Subasta"
+      - "Average Earnings incl. Bonus" → "Promedio Ganancias incl. Bonificación"
+      - "Employment Change" → "Empleo Cambio"
+      - "Claimant Count Change" → "Conteo de Solicitantes Cambio"
+      - "HMRC Payrolls Change" → "HMRC Nóminas Cambio"
+    - ✅ Función con word boundaries para reemplazos precisos
+    - ✅ Soporte para formas singular/plural (Bill/Bills, Market/Markets, etc.)
+    - ✅ Nombres completos de países mostrados en tabla (banderas + nombre completo)
+
 - **October 14, 2025** (Update 3): ✅ Finnworlds API Completamente Funcional
   - **API Integration Fixed**:
     - ✅ Endpoint correcto: `/macrocalendar` (antes usaba `/economiccalendar` que no existe)
