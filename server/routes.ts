@@ -7,6 +7,10 @@ import { insertWatchlistCountrySchema, insertWatchlistEventSchema } from "@share
 const FINNWORLDS_API_KEY = process.env.FINNWORLDS_API_KEY;
 const FINNWORLDS_BASE_URL = "https://api.finnworlds.com/api/v1";
 
+// Caché en memoria para datos de Finnworlds (5 minutos de vida)
+const apiCache = new Map<string, { data: any[], timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
 // Diccionario de traducciones de términos económicos
 const economicTranslations: Record<string, string> = {
   // Indicadores económicos generales
@@ -423,58 +427,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Para "Este Mes" esto mostrará los próximos 14 días desde hoy
       const datesToFetch = dates.slice(0, 14);
 
+      // Helper function to process requests in batches to avoid rate limiting
+      const fetchInBatches = async <T,>(
+        items: T[],
+        batchSize: number,
+        processor: (item: T) => Promise<any>
+      ): Promise<any[]> => {
+        const results: any[] = [];
+        for (let i = 0; i < items.length; i += batchSize) {
+          const batch = items.slice(i, i + batchSize);
+          const batchResults = await Promise.all(batch.map(processor));
+          results.push(...batchResults);
+          // Add delay between batches to avoid rate limiting
+          if (i + batchSize < items.length) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+        }
+        return results;
+      };
+
       // Fetch data from Finnworlds API (para todos los países y todas las fechas)
       let events: FinnworldsEvent[] = [];
       
+      // Verificar caché primero
+      const cacheKey = `${JSON.stringify(targetCountries)}-${fromDate}-${toDate}`;
+      const cached = apiCache.get(cacheKey);
+      if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+        console.log(`Using cached data for ${cacheKey.substring(0, 100)}...`);
+        events = cached.data;
+      } else {
       try {
-        // Hacer una llamada por cada combinación de país y fecha
-        const fetchPromises = targetCountries.flatMap(country => 
-          datesToFetch.map(async (date) => {
-            const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
-            countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
-            countryApiUrl.searchParams.set("date", date);
-            countryApiUrl.searchParams.set("country", country);
-            
-            try {
-              const response = await fetch(countryApiUrl.toString());
-              const responseText = await response.text();
-              
-              if (response.status === 401 || response.status === 403) {
-                throw new Error("API authentication failed");
-              }
-              
-              if (!response.ok) {
-                return [];
-              }
-              
-              const data = JSON.parse(responseText);
-              
-              // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
-              if (data.code === 404 || data.code === "404") {
-                return [];
-              }
-              
-              // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
-              if (data.result && data.result.output && Array.isArray(data.result.output)) {
-                return data.result.output;
-              }
-              
-              return [];
-            } catch (error) {
-              console.error(`Error fetching data for ${country} on ${date}:`, error);
-              return [];
-            }
-          })
+        // Crear una lista de todas las combinaciones de país + fecha
+        const requests = targetCountries.flatMap(country => 
+          datesToFetch.map(date => ({ country, date }))
         );
         
-        const results = await Promise.all(fetchPromises);
+        // Procesar peticiones en lotes de 2 para evitar rate limiting
+        const results = await fetchInBatches(requests, 2, async ({ country, date }) => {
+          const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
+          countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
+          countryApiUrl.searchParams.set("date", date);
+          countryApiUrl.searchParams.set("country", country);
+          
+          try {
+            const response = await fetch(countryApiUrl.toString());
+            const responseText = await response.text();
+            
+            if (response.status === 401 || response.status === 403) {
+              console.error(`API auth failed for ${country} on ${date}`);
+              throw new Error("API authentication failed");
+            }
+            
+            if (!response.ok) {
+              console.log(`No data for ${country} on ${date}: status ${response.status}`);
+              return [];
+            }
+            
+            const data = JSON.parse(responseText);
+            
+            // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
+            if (data.code === 404 || data.code === "404") {
+              console.log(`No events for ${country} on ${date} (404)`);
+              return [];
+            }
+            
+            // Manejar error de rate limiting
+            if (data.error && data.error.includes("limit per minute")) {
+              console.warn(`Rate limit hit for ${country} on ${date}, retrying after delay...`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              // Reintentar una vez
+              const retryResponse = await fetch(countryApiUrl.toString());
+              const retryText = await retryResponse.text();
+              const retryData = JSON.parse(retryText);
+              if (retryData.result && retryData.result.output) {
+                console.log(`Retry successful: ${retryData.result.output.length} events for ${country} on ${date}`);
+                return retryData.result.output;
+              }
+              return [];
+            }
+            
+            // Finnworlds devuelve múltiples formatos:
+            // 1. { status: {...}, result: { output: [...] } }
+            if (data.result && data.result.output && Array.isArray(data.result.output)) {
+              console.log(`Fetched ${data.result.output.length} events for ${country} on ${date}`);
+              return data.result.output;
+            }
+            
+            // 2. { result: [...] } (formato alternativo)
+            if (data.result && Array.isArray(data.result)) {
+              console.log(`Fetched ${data.result.length} events for ${country} on ${date} (alt format)`);
+              return data.result;
+            }
+            
+            // 3. Array directo [...]
+            if (Array.isArray(data)) {
+              console.log(`Fetched ${data.length} events for ${country} on ${date} (direct array)`);
+              return data;
+            }
+            
+            console.log(`Unexpected response format for ${country} on ${date}:`, JSON.stringify(data).substring(0, 200));
+            return [];
+          } catch (error) {
+            console.error(`Error fetching data for ${country} on ${date}:`, error);
+            return [];
+          }
+        });
+        
         events = results.flat(); // Combinar todos los eventos
+        console.log(`Total events after aggregation: ${events.length}, from ${results.length} requests`);
+        
+        // Guardar en caché si obtuvimos datos
+        if (events.length > 0) {
+          apiCache.set(cacheKey, { data: events, timestamp: Date.now() });
+          console.log(`Cached ${events.length} events for ${cacheKey.substring(0, 100)}...`);
+        }
         
       } catch (apiError) {
+        console.error("Critical API error:", apiError);
         return res.status(500).json({ 
           error: "API connection failed",
           message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
         });
+      }
       }
 
       // Normalize the response format with defensive time parsing
