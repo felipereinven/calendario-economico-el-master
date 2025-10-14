@@ -335,13 +335,52 @@ function translateEventName(eventName: string): string {
 
 // Palabras clave para categorizar eventos
 const categoryKeywords = {
-  employment: ['employment', 'unemployment', 'jobless', 'payroll', 'jobs', 'labor', 'empleo', 'desempleo', 'nómina'],
-  inflation: ['cpi', 'ppi', 'inflation', 'price index', 'prices', 'inflación', 'precios', 'ipc', 'ipp'],
-  monetary: ['interest rate', 'fed', 'fomc', 'central bank', 'monetary policy', 'ecb', 'boc', 'boe', 'boj', 'tasa de interés', 'política monetaria', 'banco central'],
-  manufacturing: ['manufacturing', 'pmi', 'industrial production', 'factory', 'manufactura', 'producción industrial', 'fábrica'],
-  services: ['services', 'retail sales', 'consumer spending', 'servicios', 'ventas minoristas', 'gasto del consumidor'],
-  energy: ['oil', 'energy', 'crude', 'natural gas', 'petróleo', 'energía', 'crudo', 'gas'],
-  confidence: ['confidence', 'sentiment', 'survey', 'confianza', 'sentimiento', 'encuesta'],
+  employment: [
+    'employment', 'unemployment', 'jobless', 'payroll', 'jobs', 'labor', 'wage', 'earnings', 'nfp',
+    'empleo', 'desempleo', 'nómina', 'trabajo', 'laboral', 'salario', 'ganancias', 'sueldo',
+    'claimant', 'solicitante', 'desempleados'
+  ],
+  inflation: [
+    'cpi', 'ppi', 'inflation', 'price index', 'prices', 'rpi', 'core',
+    'inflación', 'precios', 'ipc', 'ipp', 'índice de precios', 'harmonised', 'harmonizado',
+    'consumer price', 'producer price', 'precio consumidor', 'precio productor'
+  ],
+  monetary: [
+    'interest rate', 'fed', 'fomc', 'central bank', 'monetary policy', 'ecb', 'boc', 'boe', 'boj', 'rba', 'rbnz',
+    'tasa de interés', 'política monetaria', 'banco central', 'bdi', 'bdc', 'bde',
+    'speech', 'discurso', 'minutes', 'actas', 'decision', 'decisión',
+    'bond', 'bill', 'note', 'auction', 'bono', 'letra', 'subasta', 'treasury', 'tesoro',
+    'yield', 'rendimiento', 'debt', 'deuda'
+  ],
+  manufacturing: [
+    'manufacturing', 'pmi', 'industrial production', 'factory', 'orders', 'output',
+    'manufactura', 'producción industrial', 'fábrica', 'órdenes', 'pedidos', 'producción',
+    'industrial', 'factory orders', 'pedidos industriales'
+  ],
+  services: [
+    'services', 'retail sales', 'consumer spending', 'consumption',
+    'servicios', 'ventas minoristas', 'gasto del consumidor', 'consumo', 'ventas',
+    'sales', 'spending', 'gastos', 'construction', 'construcción', 'building', 'permits',
+    'permisos', 'vivienda', 'housing'
+  ],
+  trade: [
+    'trade', 'export', 'import', 'balance', 'current account', 'goods',
+    'comercio', 'exportación', 'importación', 'balanza', 'cuenta corriente', 'bienes',
+    'trade balance', 'balanza comercial', 'customs', 'aduana'
+  ],
+  gdp: [
+    'gdp', 'gross domestic', 'economic growth', 'growth rate',
+    'pib', 'producto interno', 'producto bruto', 'crecimiento económico', 'crecimiento'
+  ],
+  energy: [
+    'oil', 'energy', 'crude', 'natural gas', 'petroleum', 'eia', 'opec',
+    'petróleo', 'energía', 'crudo', 'gas', 'inventories', 'inventarios', 'stocks'
+  ],
+  confidence: [
+    'confidence', 'sentiment', 'survey', 'outlook', 'expectations', 'index', 'optimism',
+    'confianza', 'sentimiento', 'encuesta', 'perspectivas', 'expectativas', 'índice', 'optimismo',
+    'business', 'consumer', 'negocios', 'consumidor', 'empresarial', 'zew', 'ifo', 'nfib'
+  ],
 };
 
 // Función para determinar la categoría de un evento
@@ -669,10 +708,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply category filter if specified
       if (categories && typeof categories === "string" && categories.trim()) {
         const selectedCategories = categories.split(',').map(c => c.trim());
+        const beforeFilter = normalizedEvents.length;
+        
+        // Contar eventos por categoría antes del filtro
+        const categoryCounts: Record<string, number> = {};
+        normalizedEvents.forEach(event => {
+          const cats = categorizeEvent(event.event);
+          cats.forEach(cat => {
+            categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+          });
+        });
+        
+        console.log(`Category filter applied. Before: ${beforeFilter} events`);
+        console.log(`Category counts:`, categoryCounts);
+        console.log(`Selected categories: ${selectedCategories.join(', ')}`);
+        
         normalizedEvents = normalizedEvents.filter((event) => {
           const eventCategories = categorizeEvent(event.event);
           return selectedCategories.some(cat => eventCategories.includes(cat));
         });
+        
+        console.log(`After category filter: ${normalizedEvents.length} events`);
       }
 
       // Apply search filter if specified

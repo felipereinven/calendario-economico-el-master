@@ -25,8 +25,10 @@ export const economicCategories = [
   { value: "monetary", label: "Política Monetaria", icon: "🏛️" },
   { value: "manufacturing", label: "Manufactura", icon: "🏭" },
   { value: "services", label: "Servicios", icon: "🔔" },
+  { value: "gdp", label: "PIB y Crecimiento", icon: "📊" },
+  { value: "trade", label: "Comercio Exterior", icon: "🌐" },
   { value: "energy", label: "Energía", icon: "⚡" },
-  { value: "confidence", label: "Confianza del Consumidor", icon: "😊" },
+  { value: "confidence", label: "Confianza", icon: "😊" },
 ] as const;
 
 export type EconomicCategory = typeof economicCategories[number]["value"];
