@@ -4,6 +4,8 @@ import { type EconomicEvent, type FilterOptions, countries } from "@shared/schem
 import { FilterControls } from "@/components/calendar/filter-controls";
 import { EventsTable } from "@/components/calendar/events-table";
 import { TimezoneSelector } from "@/components/calendar/timezone-selector";
+import { NotificationSettings } from "@/components/calendar/notification-settings";
+import { useNotifications } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -20,6 +22,8 @@ export default function CalendarPage() {
   
   const [refreshInterval, setRefreshInterval] = useState<number>(0); // 0 = disabled
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationImpactLevels, setNotificationImpactLevels] = useState<("high" | "medium" | "low")[]>(["high"]);
 
   // Build query string from filters
   const queryParams = new URLSearchParams();
@@ -53,6 +57,12 @@ export default function CalendarPage() {
       setLastUpdated(new Date(dataUpdatedAt));
     }
   }, [dataUpdatedAt, isLoading]);
+  
+  // Notification system
+  const { newEventCount, clearNotificationBadge } = useNotifications(events, {
+    enabled: notificationsEnabled,
+    impactLevels: notificationImpactLevels,
+  });
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -80,6 +90,16 @@ export default function CalendarPage() {
                   Updated: {format(lastUpdated, "HH:mm:ss")}
                 </div>
               )}
+              
+              {/* Notification Settings */}
+              <NotificationSettings
+                enabled={notificationsEnabled}
+                onToggle={setNotificationsEnabled}
+                impactLevels={notificationImpactLevels}
+                onImpactLevelsChange={setNotificationImpactLevels}
+                newEventCount={newEventCount}
+                onClearBadge={clearNotificationBadge}
+              />
               
               {/* Manual Refresh Button */}
               <Button
