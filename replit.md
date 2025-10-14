@@ -8,11 +8,29 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 4): ✅ Categorías Económicas + Configuración de Países Predeterminados
+  - **Filtro de Categorías Económicas**:
+    - ✅ 7 categorías disponibles: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, Energía, Confianza del Consumidor
+    - ✅ Cada categoría tiene icono distintivo (emoji) y palabras clave de detección automática
+    - ✅ Sistema inteligente de categorización basado en palabras clave en nombres de eventos
+    - ✅ Filtros activos muestran categorías seleccionadas con iconos
+  
+  - **Países Predeterminados Configurados**:
+    - ✅ Cuando no se selecciona ningún país, consulta automáticamente: Estados Unidos, Zona Euro, Alemania, Francia, España, Reino Unido
+    - ✅ España (ESP) y Zona Euro (EUR) agregados al mapeo de países
+    - ✅ Mapeo completo: USA→United_States, EUR→Eurozone, GBR→United_Kingdom, DEU→Germany, FRA→France, ESP→Spain, CAD→Canada, JPN→Japan, CHN→China, IND→India, BRA→Brazil
+  
+  - **Consulta de Rango Completo de Fechas**:
+    - ✅ Backend ahora consulta TODAS las fechas del rango seleccionado (no solo el primer día)
+    - ✅ Genera array de fechas desde fromDate hasta toDate (sin límites)
+    - ✅ Consultas paralelas para cada combinación de país + fecha
+    - ✅ Ejemplo: "Esta Semana" consulta todos los 7 días, "Este Mes" consulta todos los 30-31 días
+    - ✅ Sistema optimizado con Promise.all() para máxima velocidad
+
 - **October 14, 2025** (Update 3): ✅ Finnworlds API Completamente Funcional
   - **API Integration Fixed**:
     - ✅ Endpoint correcto: `/macrocalendar` (antes usaba `/economiccalendar` que no existe)
     - ✅ Parámetros correctos: `date` (single date YYYY-MM-DD), `country` (obligatorio)
-    - ✅ Mapeo de países: USA→United_States, CAD→Canada, GBR→United_Kingdom, DEU→Germany, FRA→France, JPN→Japan, CHN→China, IND→India, BRA→Brazil
     - ✅ Extracción de datos: `data.result.output` (estructura: `{ status, result: { output: [...] } }`)
     - ✅ Mapeo de impacto: "1"=high, "2"=medium, "3"=low (antes esperaba strings)
     - ✅ Seguridad: Removidos todos los campos debug que exponían la API key en mensajes de error

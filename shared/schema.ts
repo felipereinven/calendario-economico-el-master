@@ -46,10 +46,12 @@ export type FilterOptions = z.infer<typeof filterOptionsSchema>;
 // Country options for filters
 export const countries = [
   { code: "USA", name: "Estados Unidos" },
-  { code: "CAD", name: "Canadá" },
-  { code: "GBR", name: "Reino Unido" },
+  { code: "EUR", name: "Zona Euro" },
   { code: "DEU", name: "Alemania" },
   { code: "FRA", name: "Francia" },
+  { code: "ESP", name: "España" },
+  { code: "GBR", name: "Reino Unido" },
+  { code: "CAD", name: "Canadá" },
   { code: "JPN", name: "Japón" },
   { code: "CHN", name: "China" },
   { code: "IND", name: "India" },

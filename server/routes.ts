@@ -204,10 +204,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Mapeo de códigos ISO a nombres de país que Finnworlds acepta
       const countryCodeToName: Record<string, string> = {
         'USA': 'United_States',
+        'EUR': 'Eurozone',
         'GBR': 'United_Kingdom',
-        'CAD': 'Canada',
         'DEU': 'Germany',
         'FRA': 'France',
+        'ESP': 'Spain',
+        'CAD': 'Canada',
         'JPN': 'Japan',
         'CHN': 'China',
         'IND': 'India',
@@ -223,51 +225,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return countryCodeToName[countryCode] || countryCode.replace(/ /g, '_');
         });
       } else {
-        // Si no hay países seleccionados, usar los principales
-        targetCountries = ['United_States', 'United_Kingdom', 'Canada'];
+        // Si no hay países seleccionados, usar los principales (Estados Unidos, Zona Euro, Alemania, Francia, España, Reino Unido)
+        targetCountries = ['United_States', 'Eurozone', 'Germany', 'France', 'Spain', 'United_Kingdom'];
       }
 
-      // Fetch data from Finnworlds API (para todos los países seleccionados)
+      // Generar todas las fechas del rango
+      const dates: string[] = [];
+      const start = parseISO(fromDate);
+      const end = parseISO(toDate);
+      let currentDate = start;
+      
+      while (currentDate <= end) {
+        dates.push(format(currentDate, "yyyy-MM-dd"));
+        currentDate = new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      const datesToFetch = dates;
+
+      // Fetch data from Finnworlds API (para todos los países y todas las fechas)
       let events: FinnworldsEvent[] = [];
       
       try {
-        // Hacer una llamada por cada país (Finnworlds solo acepta un país a la vez)
-        const fetchPromises = targetCountries.map(async (country) => {
-          const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
-          countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
-          countryApiUrl.searchParams.set("date", fromDate);
-          countryApiUrl.searchParams.set("country", country);
-          
-          try {
-            const response = await fetch(countryApiUrl.toString());
-            const responseText = await response.text();
+        // Hacer una llamada por cada combinación de país y fecha
+        const fetchPromises = targetCountries.flatMap(country => 
+          datesToFetch.map(async (date) => {
+            const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
+            countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
+            countryApiUrl.searchParams.set("date", date);
+            countryApiUrl.searchParams.set("country", country);
             
-            if (response.status === 401 || response.status === 403) {
-              throw new Error("API authentication failed");
-            }
-            
-            if (!response.ok) {
+            try {
+              const response = await fetch(countryApiUrl.toString());
+              const responseText = await response.text();
+              
+              if (response.status === 401 || response.status === 403) {
+                throw new Error("API authentication failed");
+              }
+              
+              if (!response.ok) {
+                return [];
+              }
+              
+              const data = JSON.parse(responseText);
+              
+              // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
+              if (data.code === 404 || data.code === "404") {
+                return [];
+              }
+              
+              // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
+              if (data.result && data.result.output && Array.isArray(data.result.output)) {
+                return data.result.output;
+              }
+              
+              return [];
+            } catch (error) {
+              console.error(`Error fetching data for ${country} on ${date}:`, error);
               return [];
             }
-            
-            const data = JSON.parse(responseText);
-            
-            // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
-            if (data.code === 404 || data.code === "404") {
-              return [];
-            }
-            
-            // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
-            if (data.result && data.result.output && Array.isArray(data.result.output)) {
-              return data.result.output;
-            }
-            
-            return [];
-          } catch (error) {
-            console.error(`Error fetching data for ${country}:`, error);
-            return [];
-          }
-        });
+          })
+        );
         
         const results = await Promise.all(fetchPromises);
         events = results.flat(); // Combinar todos los eventos
