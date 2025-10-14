@@ -68,21 +68,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         toDate = format(endOfDay(now), "yyyy-MM-dd");
       }
 
-      // Build Finnworlds API URL
-      const apiUrl = new URL(`${FINNWORLDS_BASE_URL}/economiccalendar`);
+      // Finnworlds API solo acepta UNA fecha específica, no rangos
+      // Country es OBLIGATORIO en la API
+      const apiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
       apiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
-      apiUrl.searchParams.set("date_from", fromDate);
-      apiUrl.searchParams.set("date_to", toDate);
-
-      // Add country filter if specified (API may support comma-separated values)
+      apiUrl.searchParams.set("date", fromDate);
+      
+      // Mapeo de códigos ISO a nombres de país que Finnworlds acepta
+      const countryCodeToName: Record<string, string> = {
+        'USA': 'United_States',
+        'GBR': 'United_Kingdom',
+        'CAD': 'Canada',
+        'DEU': 'Germany',
+        'FRA': 'France',
+        'JPN': 'Japan',
+        'CHN': 'China',
+        'IND': 'India',
+        'BRA': 'Brazil',
+      };
+      
+      // Country es requerido - usar el primero seleccionado o US por defecto
+      let targetCountry = "United_States";
       if (countries && typeof countries === "string" && countries.trim()) {
-        apiUrl.searchParams.set("country", countries);
+        const countryCode = countries.split(',')[0].trim();
+        targetCountry = countryCodeToName[countryCode] || countryCode.replace(/ /g, '_');
       }
-
-      // Add impact filter if specified (API may support comma-separated values)
-      if (impacts && typeof impacts === "string" && impacts.trim()) {
-        apiUrl.searchParams.set("impact", impacts);
-      }
+      apiUrl.searchParams.set("country", targetCountry);
 
       // Fetch data from Finnworlds API
       let events: FinnworldsEvent[] = [];
@@ -94,55 +105,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (response.status === 401 || response.status === 403) {
           return res.status(500).json({ 
             error: "API authentication failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
-            debug: { status: response.status, url: apiUrl.toString(), response: responseText.substring(0, 200) }
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la API key."
           });
         }
         
         if (!response.ok) {
           return res.status(500).json({ 
             error: "API request failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
-            debug: { status: response.status, url: apiUrl.toString(), response: responseText.substring(0, 200) }
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
           });
         }
         
-        const data = JSON.parse(responseText);
-        events = Array.isArray(data) ? data : (data.events || data.result || []);
-        
-        if (events.length === 0) {
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
           return res.status(500).json({ 
-            error: "API returned no events",
-            message: "La API de Finnworlds no devolvió eventos. Posible error de parámetros o API key inválida.",
-            debug: { url: apiUrl.toString(), responsePreview: responseText.substring(0, 300), dataType: typeof data, isArray: Array.isArray(data), keys: Object.keys(data) }
+            error: "API returned invalid JSON",
+            message: "La API de Finnworlds devolvió una respuesta inválida."
+          });
+        }
+        
+        // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
+        if (data.result && data.result.output && Array.isArray(data.result.output)) {
+          events = data.result.output;
+        } else if (data.result && Array.isArray(data.result)) {
+          events = data.result;
+        } else if (Array.isArray(data)) {
+          events = data;
+        } else {
+          return res.status(500).json({ 
+            error: "Unexpected API response format",
+            message: "La API de Finnworlds devolvió un formato inesperado."
           });
         }
       } catch (apiError) {
         return res.status(500).json({ 
           error: "API connection failed",
-          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
-          debug: { error: apiError instanceof Error ? apiError.message : String(apiError) }
+          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
         });
       }
 
       // Normalize the response format with defensive time parsing
-      let normalizedEvents = events.map((event, index) => {
-        // Ensure time is in HH:MM:SS format
-        let eventTime = event.time || "00:00:00";
-        if (eventTime && !eventTime.includes(":")) {
-          eventTime = "00:00:00"; // Invalid time format, use default
-        }
+      let normalizedEvents = events.map((event: any, index) => {
+        // Finnworlds devuelve datetime como "2025-10-14 10:00:00"
+        const datetime = event.datetime || "";
+        const [eventDate, eventTime] = datetime.split(' ');
+        
+        // Mapear impact numérico a string: "1"->high, "2"->medium, "3"->low
+        let impactLevel = "low";
+        if (event.impact === "1") impactLevel = "high";
+        else if (event.impact === "2") impactLevel = "medium";
+        else if (event.impact === "3") impactLevel = "low";
         
         return {
           id: event.id || `event-${index}`,
-          date: event.date,
-          time: eventTime,
-          country: event.country,
-          countryName: event.country_name || event.country,
-          event: event.event,
-          impact: event.impact || "low",
+          date: eventDate || format(new Date(), "yyyy-MM-dd"),
+          time: eventTime || "00:00:00",
+          country: event.iso_country_code || event.country || "US",
+          countryName: event.country || event.country_name || "Unknown",
+          event: event.report_name || event.event || "Economic Event",
+          impact: impactLevel,
           actual: event.actual || null,
-          forecast: event.forecast || null,
+          forecast: event.consensus || event.forecast || null,
           previous: event.previous || null,
         };
       });
