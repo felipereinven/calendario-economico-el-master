@@ -11,6 +11,48 @@ const FINNWORLDS_BASE_URL = "https://api.finnworlds.com/api/v1";
 const apiCache = new Map<string, { data: any[], timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
+// Global lock para prevenir peticiones concurrentes que excedan rate limit
+const fetchLocks = new Map<string, Promise<any[]>>();
+
+// Global queue para rate limiting de TODAS las peticiones a Finnworlds
+class GlobalRateLimiter {
+  private queue: Array<() => Promise<any>> = [];
+  private processing = false;
+  private readonly delayMs = 3000; // 3 segundos entre peticiones = max 20/min
+
+  async add<T>(task: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await task();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
+  }
+
+  private async processQueue() {
+    if (this.processing || this.queue.length === 0) return;
+    
+    this.processing = true;
+    while (this.queue.length > 0) {
+      const task = this.queue.shift()!;
+      await task();
+      
+      // Delay antes de la siguiente petición
+      if (this.queue.length > 0) {
+        await new Promise(resolve => setTimeout(resolve, this.delayMs));
+      }
+    }
+    this.processing = false;
+  }
+}
+
+const globalRateLimiter = new GlobalRateLimiter();
+
 // Diccionario de traducciones de términos económicos
 const economicTranslations: Record<string, string> = {
   // Indicadores económicos generales
@@ -423,47 +465,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentDate.setDate(currentDate.getDate() + 1);
       }
       
-      // Limitar a un máximo de 14 días para evitar sobrecargar la API
-      // Para "Este Mes" esto mostrará los próximos 14 días desde hoy
-      const datesToFetch = dates.slice(0, 14);
+      // Limitar días según el rango para optimizar rate limiting
+      // Con límite de 20 req/min (1 cada 3 seg), 11 países × N días = tiempo de carga
+      // "Hoy": 1 día × 11 países = 11 req = ~33 segundos (aceptable)
+      // "Esta Semana": 3 días × 11 países = 33 req = ~99 segundos (límite razonable)
+      // "Este Mes": 7 días × 11 países = 77 req = ~231 segundos (demasiado, limitar a 3 días)
+      const maxDays = dateRange === 'today' ? 1 : dateRange === 'this-week' ? 3 : 3;
+      const datesToFetch = dates.slice(0, maxDays);
 
-      // Helper function to process requests in batches to avoid rate limiting
-      const fetchInBatches = async <T,>(
+      // Usar el global rate limiter para procesar todas las peticiones
+      const processWithGlobalRateLimit = async <T,>(
         items: T[],
-        batchSize: number,
         processor: (item: T) => Promise<any>
       ): Promise<any[]> => {
         const results: any[] = [];
-        for (let i = 0; i < items.length; i += batchSize) {
-          const batch = items.slice(i, i + batchSize);
-          const batchResults = await Promise.all(batch.map(processor));
-          results.push(...batchResults);
-          // Add delay between batches to avoid rate limiting
-          if (i + batchSize < items.length) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
+        
+        for (const item of items) {
+          // Cada petición pasa por el rate limiter global
+          const result = await globalRateLimiter.add(() => processor(item));
+          results.push(result);
         }
+        
         return results;
       };
 
       // Fetch data from Finnworlds API (para todos los países y todas las fechas)
       let events: FinnworldsEvent[] = [];
       
-      // Verificar caché primero
-      const cacheKey = `${JSON.stringify(targetCountries)}-${fromDate}-${toDate}`;
+      // Verificar caché primero (normalizar cache key ordenando países alfabéticamente)
+      const normalizedCountries = [...targetCountries].sort();
+      const cacheKey = `${JSON.stringify(normalizedCountries)}-${fromDate}-${toDate}`;
       const cached = apiCache.get(cacheKey);
       if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
         console.log(`Using cached data for ${cacheKey.substring(0, 100)}...`);
         events = cached.data;
       } else {
+        // Si hay un fetch en curso para esta cache key, esperar a que termine
+        if (fetchLocks.has(cacheKey)) {
+          console.log(`Waiting for ongoing fetch for ${cacheKey.substring(0, 100)}...`);
+          events = await fetchLocks.get(cacheKey)!;
+        } else {
+          // Crear el lock y proceder con el fetch
+          const fetchPromise = (async () => {
       try {
         // Crear una lista de todas las combinaciones de país + fecha
         const requests = targetCountries.flatMap(country => 
           datesToFetch.map(date => ({ country, date }))
         );
         
-        // Procesar peticiones en lotes de 2 para evitar rate limiting
-        const results = await fetchInBatches(requests, 2, async ({ country, date }) => {
+        // Procesar peticiones con global rate limiting: todas las peticiones del servidor usan la misma cola
+        const results = await processWithGlobalRateLimit(requests, async ({ country, date }) => {
           const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
           countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
           countryApiUrl.searchParams.set("date", date);
@@ -533,21 +584,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
         
-        events = results.flat(); // Combinar todos los eventos
-        console.log(`Total events after aggregation: ${events.length}, from ${results.length} requests`);
+            events = results.flat(); // Combinar todos los eventos
+            console.log(`Total events after aggregation: ${events.length}, from ${results.length} requests`);
+            
+            // Guardar en caché incluso si no hay datos (cachear respuestas vacías)
+            apiCache.set(cacheKey, { data: events, timestamp: Date.now() });
+            console.log(`Cached ${events.length} events for ${cacheKey.substring(0, 100)}...`);
+            
+            return events;
+          } catch (apiError) {
+            console.error("Critical API error:", apiError);
+            throw apiError;
+          }
+        })();
         
-        // Guardar en caché si obtuvimos datos
-        if (events.length > 0) {
-          apiCache.set(cacheKey, { data: events, timestamp: Date.now() });
-          console.log(`Cached ${events.length} events for ${cacheKey.substring(0, 100)}...`);
+        // Guardar el lock
+        fetchLocks.set(cacheKey, fetchPromise);
+        
+        try {
+          events = await fetchPromise;
+        } catch (apiError) {
+          return res.status(500).json({ 
+            error: "API connection failed",
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
+          });
+        } finally {
+          // Limpiar el lock después de que termine (éxito o fallo)
+          fetchLocks.delete(cacheKey);
         }
-        
-      } catch (apiError) {
-        console.error("Critical API error:", apiError);
-        return res.status(500).json({ 
-          error: "API connection failed",
-          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
-        });
       }
       }
 
