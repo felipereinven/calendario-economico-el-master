@@ -98,7 +98,7 @@ export function NotificationSettings({
           )}
         </Button>
       </DialogTrigger>
-      <DialogContent data-testid="dialog-notifications">
+      <DialogContent className="z-[300]" data-testid="dialog-notifications">
         <DialogHeader>
           <DialogTitle>Notificaciones de Eventos</DialogTitle>
           <DialogDescription>
