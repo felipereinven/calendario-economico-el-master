@@ -77,6 +77,14 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 z-[200]" align="start">
+              <DropdownMenuCheckboxItem
+                checked={!filters.countries || filters.countries.length === 0}
+                onCheckedChange={() => onFilterChange({ countries: [] })}
+                data-testid="checkbox-country-all"
+              >
+                <span className="font-semibold">Todos los países</span>
+              </DropdownMenuCheckboxItem>
+              <div className="my-1 h-px bg-border" />
               {countries.map((country) => (
                 <DropdownMenuCheckboxItem
                   key={country.code}

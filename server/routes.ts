@@ -189,60 +189,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'BRA': 'Brazil',
       };
       
-      // Country es requerido - usar el primero seleccionado o US por defecto
-      let targetCountry = "United_States";
+      // Determinar qué países consultar
+      let targetCountries: string[] = [];
       if (countries && typeof countries === "string" && countries.trim()) {
-        const countryCode = countries.split(',')[0].trim();
-        targetCountry = countryCodeToName[countryCode] || countryCode.replace(/ /g, '_');
+        // Usar los países seleccionados
+        targetCountries = countries.split(',').map(code => {
+          const countryCode = code.trim();
+          return countryCodeToName[countryCode] || countryCode.replace(/ /g, '_');
+        });
+      } else {
+        // Si no hay países seleccionados, usar los principales
+        targetCountries = ['United_States', 'United_Kingdom', 'Canada'];
       }
-      apiUrl.searchParams.set("country", targetCountry);
 
-      // Fetch data from Finnworlds API
+      // Fetch data from Finnworlds API (para todos los países seleccionados)
       let events: FinnworldsEvent[] = [];
       
       try {
-        const response = await fetch(apiUrl.toString());
-        const responseText = await response.text();
+        // Hacer una llamada por cada país (Finnworlds solo acepta un país a la vez)
+        const fetchPromises = targetCountries.map(async (country) => {
+          const countryApiUrl = new URL(`${FINNWORLDS_BASE_URL}/macrocalendar`);
+          countryApiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
+          countryApiUrl.searchParams.set("date", fromDate);
+          countryApiUrl.searchParams.set("country", country);
+          
+          try {
+            const response = await fetch(countryApiUrl.toString());
+            const responseText = await response.text();
+            
+            if (response.status === 401 || response.status === 403) {
+              throw new Error("API authentication failed");
+            }
+            
+            if (!response.ok) {
+              return [];
+            }
+            
+            const data = JSON.parse(responseText);
+            
+            // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
+            if (data.code === 404 || data.code === "404") {
+              return [];
+            }
+            
+            // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
+            if (data.result && data.result.output && Array.isArray(data.result.output)) {
+              return data.result.output;
+            }
+            
+            return [];
+          } catch (error) {
+            console.error(`Error fetching data for ${country}:`, error);
+            return [];
+          }
+        });
         
-        if (response.status === 401 || response.status === 403) {
-          return res.status(500).json({ 
-            error: "API authentication failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la API key."
-          });
-        }
+        const results = await Promise.all(fetchPromises);
+        events = results.flat(); // Combinar todos los eventos
         
-        if (!response.ok) {
-          return res.status(500).json({ 
-            error: "API request failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión."
-          });
-        }
-        
-        // Parsear respuesta
-        let data;
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          return res.status(500).json({ 
-            error: "API returned invalid JSON",
-            message: "La API de Finnworlds devolvió una respuesta inválida."
-          });
-        }
-        
-        // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
-        if (data.code === 404 || data.code === "404") {
-          events = [];
-        }
-        // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
-        else if (data.result && data.result.output && Array.isArray(data.result.output)) {
-          events = data.result.output;
-        } else if (data.result && Array.isArray(data.result)) {
-          events = data.result;
-        } else if (Array.isArray(data)) {
-          events = data;
-        } else {
-          events = [];
-        }
       } catch (apiError) {
         return res.status(500).json({ 
           error: "API connection failed",
