@@ -112,7 +112,7 @@ export default function CalendarPage() {
                   <Clock className="w-3.5 h-3.5 mr-1" />
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-[300]">
                   <SelectItem value="UTC">UTC</SelectItem>
                   <SelectItem value="America/New_York">New York</SelectItem>
                   <SelectItem value="America/Chicago">Chicago</SelectItem>
