@@ -8,6 +8,17 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 8): ✅ Corrección del Filtro de Nivel de Impacto
+  - **Filtro de Impacto Funcional**:
+    - ✅ Implementada lógica de filtrado por nivel de impacto en el backend
+    - ✅ Seleccionar "Alta" → muestra solo eventos de alto impacto
+    - ✅ Seleccionar "Media" → muestra solo eventos de impacto medio
+    - ✅ Seleccionar "Baja" → muestra solo eventos de bajo impacto
+    - ✅ Selección múltiple → muestra eventos de cualquier nivel seleccionado (lógica OR)
+    - ✅ Sin selección → muestra todos los eventos
+    - ✅ Compatible con otros filtros (país, categoría, búsqueda)
+    - ✅ Tests E2E pasados para todos los escenarios del filtro
+
 - **October 14, 2025** (Update 6): ✅ Actualización Automática Diaria
   - **Detección de Cambio de Día**:
     - ✅ Sistema detecta automáticamente cuando cambia el día (de medianoche a medianoche)
