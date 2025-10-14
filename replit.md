@@ -21,12 +21,12 @@ This application serves as an interactive Global Economic Calendar that displays
     - ✅ España (ESP) y Zona Euro (EUR) agregados al mapeo de países
     - ✅ Mapeo completo: USA→United_States, EUR→Eurozone, GBR→United_Kingdom, DEU→Germany, FRA→France, ESP→Spain, CAD→Canada, JPN→Japan, CHN→China, IND→India, BRA→Brazil
   
-  - **Consulta de Rango Completo de Fechas**:
-    - ✅ Backend ahora consulta TODAS las fechas del rango seleccionado (no solo el primer día)
-    - ✅ Genera array de fechas desde fromDate hasta toDate (sin límites)
+  - **Consulta de Rango de Fechas Optimizado**:
+    - ✅ Backend consulta múltiples fechas del rango seleccionado
+    - ✅ Límite de 14 días máximo para evitar sobrecargar la API de Finnworlds
     - ✅ Consultas paralelas para cada combinación de país + fecha
-    - ✅ Ejemplo: "Esta Semana" consulta todos los 7 días, "Este Mes" consulta todos los 30-31 días
-    - ✅ Sistema optimizado con Promise.all() para máxima velocidad
+    - ✅ Ejemplo: "Hoy" = 1 día, "Esta Semana" = 7 días, "Este Mes" = 14 días (desde hoy)
+    - ✅ Sistema optimizado con Promise.all() con límite de ~154 consultas paralelas (14 días × 11 países)
 
 - **October 14, 2025** (Update 3): ✅ Finnworlds API Completamente Funcional
   - **API Integration Fixed**:

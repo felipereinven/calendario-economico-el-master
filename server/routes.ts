@@ -241,7 +241,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currentDate.setDate(currentDate.getDate() + 1);
       }
       
-      const datesToFetch = dates;
+      // Limitar a un máximo de 14 días para evitar sobrecargar la API
+      // Para "Este Mes" esto mostrará los próximos 14 días desde hoy
+      const datesToFetch = dates.slice(0, 14);
 
       // Fetch data from Finnworlds API (para todos los países y todas las fechas)
       let events: FinnworldsEvent[] = [];
