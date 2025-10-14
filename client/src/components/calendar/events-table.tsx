@@ -28,7 +28,8 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
 
   const formatEventDateTime = (dateStr: string, timeStr: string) => {
     try {
-      // Combine date and time
+      // Combine date and time - API provides times in their local market timezone
+      // We convert to the user's selected timezone for display
       const dateTime = parseISO(`${dateStr}T${timeStr}`);
       return {
         date: formatInTimeZone(dateTime, timezone, "MMM dd, yyyy"),

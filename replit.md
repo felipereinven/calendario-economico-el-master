@@ -8,7 +8,7 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
-- **October 14, 2025**: ✅ MVP Complete - All features implemented and tested
+- **October 14, 2025**: ✅ Extended MVP - Core features + Notifications & Export
   - **Data Layer**: Economic event schema with TypeScript interfaces and Zod validation
   - **Backend**: Express.js proxy server with Finnworlds API integration
     - Secure API key management via environment variables
@@ -20,13 +20,19 @@ This application serves as an interactive Global Economic Calendar that displays
     - Filter Controls: Multi-select country dropdown, impact level toggles, time period tabs, global search
     - Events Table: Responsive table with timezone-aware display, impact indicators, hover states
     - Timezone Selector: Automatic detection with manual override (floating action button)
+    - Auto-Refresh: Configurable intervals (Off/30s/1m/5m) with manual refresh and last-updated timestamp
+    - Notifications: Browser notifications for new high-impact events with badge counter
+    - CSV Export: Download filtered events with timezone-aware formatting
   - **UI/UX Polish**:
     - Professional design following Investing.com aesthetic
     - Sticky filter controls with proper z-index hierarchy
     - Loading, error, and empty states with appropriate messaging
     - All interactive elements have data-testid attributes for testing
     - No emoji usage - using Lucide icons and proper text throughout
-  - **Testing**: E2E tests passed validating filters, search, timezone, responsive design, and all user interactions
+  - **Testing**: E2E tests passed validating filters, search, timezone, responsive design, auto-refresh, notifications, and export functionality
+
+  **Known Limitations:**
+  - Timezone handling: Event times from API are parsed as ISO strings without explicit timezone metadata. Both table display and CSV export apply the same timezone conversion logic for consistency, but accuracy depends on API's source timezone (assumed to be browser-local time). Future enhancement: confirm API timezone format and implement proper timezone conversion.
 
 ## Project Architecture
 

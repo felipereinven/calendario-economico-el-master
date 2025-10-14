@@ -8,8 +8,9 @@ import { NotificationSettings } from "@/components/calendar/notification-setting
 import { useNotifications } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Download } from "lucide-react";
 import { format } from "date-fns";
+import { exportToCSV } from "@/lib/export";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -91,6 +92,18 @@ export default function CalendarPage() {
                 </div>
               )}
               
+              {/* Export Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => events && exportToCSV(events, filters.timezone || "UTC")}
+                disabled={!events || events.length === 0}
+                data-testid="button-export"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+
               {/* Notification Settings */}
               <NotificationSettings
                 enabled={notificationsEnabled}
