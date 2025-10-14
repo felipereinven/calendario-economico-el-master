@@ -116,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
+        // Parsear respuesta
         let data;
         try {
           data = JSON.parse(responseText);
@@ -126,18 +127,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
         
+        // Finnworlds devuelve HTTP 200 con code:404 cuando no hay datos
+        if (data.code === 404 || data.code === "404") {
+          events = [];
+        }
         // Finnworlds devuelve: { status: {...}, result: { output: [...] } }
-        if (data.result && data.result.output && Array.isArray(data.result.output)) {
+        else if (data.result && data.result.output && Array.isArray(data.result.output)) {
           events = data.result.output;
         } else if (data.result && Array.isArray(data.result)) {
           events = data.result;
         } else if (Array.isArray(data)) {
           events = data;
         } else {
-          return res.status(500).json({ 
-            error: "Unexpected API response format",
-            message: "La API de Finnworlds devolvió un formato inesperado."
-          });
+          events = [];
         }
       } catch (apiError) {
         return res.status(500).json({ 

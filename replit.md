@@ -8,6 +8,17 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 3): ✅ Finnworlds API Completamente Funcional
+  - **API Integration Fixed**:
+    - ✅ Endpoint correcto: `/macrocalendar` (antes usaba `/economiccalendar` que no existe)
+    - ✅ Parámetros correctos: `date` (single date YYYY-MM-DD), `country` (obligatorio)
+    - ✅ Mapeo de países: USA→United_States, CAD→Canada, GBR→United_Kingdom, DEU→Germany, FRA→France, JPN→Japan, CHN→China, IND→India, BRA→Brazil
+    - ✅ Extracción de datos: `data.result.output` (estructura: `{ status, result: { output: [...] } }`)
+    - ✅ Mapeo de impacto: "1"=high, "2"=medium, "3"=low (antes esperaba strings)
+    - ✅ Seguridad: Removidos todos los campos debug que exponían la API key en mensajes de error
+    - ✅ 404 Handling: Finnworlds devuelve HTTP 200 con `{"code": 404}` cuando no hay datos → Backend maneja correctamente y devuelve array vacío
+    - ✅ Tests E2E pasan completamente: carga, filtros (país, impacto, búsqueda, período), zona horaria, y responsividad móvil
+
 - **October 14, 2025** (Update 2): ✅ Dark Mode + Mobile Responsiveness
   - **Dark Mode**: Activado por defecto para toda la aplicación
   - **Responsividad Móvil Completa**:
@@ -18,8 +29,6 @@ This application serves as an interactive Global Economic Calendar that displays
     - Filtros con texto abreviado en móvil ("Filtros" vs "Centro de Control - Filtros Avanzados")
     - Padding y márgenes optimizados para pantallas pequeñas (px-3 en móvil, px-4-6-8 en desktop)
     - Sticky positioning ajustado para diferentes tamaños (top-[68px] móvil, top-[77px] desktop)
-  
-  - **API Status**: Finnworlds API retorna error "Error route" - investigando alternativas gratuitas
 
 - **October 14, 2025**: ✅ Full Spanish Translation & Redesign Complete
   - **Backend Changes**:
@@ -144,9 +153,13 @@ shared/
 - **API Key**: Stored securely in environment variable `FINNWORLDS_API_KEY`
 - **Backend Proxy Endpoint**: `/api/events`
   - Query parameters: `countries`, `impacts`, `dateRange`, `search`, `timezone`
-  - Forwards requests to `https://api.finnworlds.com/api/v1/economiccalendar`
-  - Error handling for authentication failures (401/403)
-  - Automatic fallback to sample data when API unavailable
+  - Forwards requests to `https://api.finnworlds.com/api/v1/macrocalendar`
+  - Required parameters: `date` (YYYY-MM-DD), `country` (full name with underscores)
+  - Country mapping: ISO codes → Finnworlds names (USA→United_States, CAD→Canada, etc.)
+  - Response parsing: `data.result.output` array
+  - Impact mapping: "1"→high, "2"→medium, "3"→low
+  - Error handling for authentication failures (401/403) with secure error messages
+  - NO fallback/mock data - shows clear errors when API unavailable
 - **Data Flow**: Frontend → Express Proxy → Finnworlds API → Response with timezone conversion
 
 ## User Preferences
