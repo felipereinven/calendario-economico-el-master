@@ -45,17 +45,17 @@ export type FilterOptions = z.infer<typeof filterOptionsSchema>;
 
 // Country options for filters
 export const countries = [
-  { code: "USA", name: "Estados Unidos" },
-  { code: "EUR", name: "Zona Euro" },
-  { code: "DEU", name: "Alemania" },
-  { code: "FRA", name: "Francia" },
-  { code: "ESP", name: "España" },
-  { code: "GBR", name: "Reino Unido" },
-  { code: "CAD", name: "Canadá" },
-  { code: "JPN", name: "Japón" },
-  { code: "CHN", name: "China" },
-  { code: "IND", name: "India" },
-  { code: "BRA", name: "Brasil" },
+  { code: "USA", name: "Estados Unidos", flag: "🇺🇸" },
+  { code: "EUR", name: "Zona Euro", flag: "🇪🇺" },
+  { code: "DEU", name: "Alemania", flag: "🇩🇪" },
+  { code: "FRA", name: "Francia", flag: "🇫🇷" },
+  { code: "ESP", name: "España", flag: "🇪🇸" },
+  { code: "GBR", name: "Reino Unido", flag: "🇬🇧" },
+  { code: "CAD", name: "Canadá", flag: "🇨🇦" },
+  { code: "JPN", name: "Japón", flag: "🇯🇵" },
+  { code: "CHN", name: "China", flag: "🇨🇳" },
+  { code: "IND", name: "India", flag: "🇮🇳" },
+  { code: "BRA", name: "Brasil", flag: "🇧🇷" },
 ] as const;
 
 export type CountryOption = typeof countries[number];

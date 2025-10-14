@@ -8,6 +8,13 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 5): ✅ Banderas de Países Agregadas
+  - **Banderas en UI**:
+    - ✅ Banderas de países agregadas en dropdown de filtros
+    - ✅ Banderas mostradas en filtros activos
+    - ✅ Banderas visibles en tabla de eventos junto al código del país
+    - ✅ Banderas de todos los países: 🇺🇸 🇪🇺 🇩🇪 🇫🇷 🇪🇸 🇬🇧 🇨🇦 🇯🇵 🇨🇳 🇮🇳 🇧🇷
+
 - **October 14, 2025** (Update 4): ✅ Categorías Económicas + Configuración de Países Predeterminados
   - **Filtro de Categorías Económicas**:
     - ✅ 7 categorías disponibles: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, Energía, Confianza del Consumidor

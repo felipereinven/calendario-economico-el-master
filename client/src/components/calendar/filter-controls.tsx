@@ -100,8 +100,11 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
                   onCheckedChange={() => toggleCountry(country.code)}
                   data-testid={`checkbox-country-${country.code}`}
                 >
-                  <span className="font-mono text-xs mr-2 text-muted-foreground">{country.code}</span>
-                  {country.name}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{country.flag}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{country.code}</span>
+                    <span>{country.name}</span>
+                  </div>
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>
@@ -231,7 +234,8 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
           {filters.countries?.map((code) => {
             const country = countries.find((c) => c.code === code);
             return country ? (
-              <Badge key={code} variant="secondary">
+              <Badge key={code} variant="secondary" className="gap-1">
+                <span className="text-base">{country.flag}</span>
                 {country.code}
               </Badge>
             ) : null;
