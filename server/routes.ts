@@ -622,10 +622,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const [eventDate, eventTime] = datetime.split(' ');
         
         // Mapear impact numérico a string: "1"->high, "2"->medium, "3"->low
-        let impactLevel = "low";
-        if (event.impact === "1") impactLevel = "high";
-        else if (event.impact === "2") impactLevel = "medium";
-        else if (event.impact === "3") impactLevel = "low";
+        // Normalizar el valor primero (manejar strings, números, con/sin espacios)
+        const impactValue = String(event.impact || "3").trim();
+        let impactLevel: "high" | "medium" | "low" = "low";
+        if (impactValue === "1") impactLevel = "high";
+        else if (impactValue === "2") impactLevel = "medium";
+        else if (impactValue === "3") impactLevel = "low";
         
         // Traducir nombre del evento al español
         const eventNameEnglish = event.report_name || event.event || "Economic Event";
@@ -648,9 +650,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Apply impact filter if specified
       if (impacts && typeof impacts === "string" && impacts.trim()) {
         const selectedImpacts = impacts.split(',').map(i => i.trim());
+        const beforeFilter = normalizedEvents.length;
+        const impactCounts = {
+          high: normalizedEvents.filter(e => e.impact === 'high').length,
+          medium: normalizedEvents.filter(e => e.impact === 'medium').length,
+          low: normalizedEvents.filter(e => e.impact === 'low').length,
+        };
+        console.log(`Impact filter applied. Before: ${beforeFilter} events (High: ${impactCounts.high}, Medium: ${impactCounts.medium}, Low: ${impactCounts.low})`);
+        console.log(`Selected impacts: ${selectedImpacts.join(', ')}`);
+        
         normalizedEvents = normalizedEvents.filter((event) => {
           return selectedImpacts.includes(event.impact);
         });
+        
+        console.log(`After impact filter: ${normalizedEvents.length} events`);
       }
 
       // Apply category filter if specified

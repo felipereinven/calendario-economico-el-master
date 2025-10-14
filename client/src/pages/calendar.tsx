@@ -117,13 +117,22 @@ export default function CalendarPage() {
             <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
               {/* Status Indicators - Hidden on mobile */}
               <div className="hidden md:flex gap-1 mr-2">
-                <div className="px-2 py-1 rounded-md bg-impact-high/20 text-impact-high text-xs font-semibold">
+                <div 
+                  className="px-2 py-1 rounded-md bg-impact-high/20 text-impact-high text-xs font-semibold"
+                  data-testid="counter-high"
+                >
                   Alta: {events?.filter(e => e.impact === 'high').length || 0}
                 </div>
-                <div className="px-2 py-1 rounded-md bg-impact-medium/20 text-impact-medium text-xs font-semibold">
+                <div 
+                  className="px-2 py-1 rounded-md bg-impact-medium/20 text-impact-medium text-xs font-semibold"
+                  data-testid="counter-medium"
+                >
                   Media: {events?.filter(e => e.impact === 'medium').length || 0}
                 </div>
-                <div className="px-2 py-1 rounded-md bg-impact-low/20 text-impact-low text-xs font-semibold">
+                <div 
+                  className="px-2 py-1 rounded-md bg-impact-low/20 text-impact-low text-xs font-semibold"
+                  data-testid="counter-low"
+                >
                   Baja: {events?.filter(e => e.impact === 'low').length || 0}
                 </div>
               </div>
