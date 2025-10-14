@@ -555,28 +555,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const cacheKey = `${JSON.stringify(normalizedCountries)}-${fromDate}-${toDate}`;
       const cached = apiCache.get(cacheKey);
       
-      // TEMPORAL: Datos de prueba para debugging del filtro de categorías
-      const testDataRaw: FinnworldsEvent[] = [
-        { id: "test-cat-1", date: fromDate, time: "08:30:00", country: "US", country_name: "United States", event: "Nóminas No Agrícolas", impact: "1", actual: "200K", forecast: "180K", previous: "175K" },
-        { id: "test-cat-2", date: fromDate, time: "10:00:00", country: "EU", country_name: "Eurozone", event: "Índice de Precios al Consumidor y/y", impact: "1", actual: "2.1%", forecast: "2.0%", previous: "1.9%" },
-        { id: "test-cat-3", date: fromDate, time: "12:00:00", country: "DE", country_name: "Germany", event: "PMI Manufactura", impact: "2", actual: "52.5", forecast: "52.0", previous: "51.8" },
-        { id: "test-cat-4", date: fromDate, time: "14:00:00", country: "GB", country_name: "United Kingdom", event: "PIB Trimestral", impact: "1", actual: "0.3%", forecast: "0.2%", previous: "0.1%" },
-        { id: "test-cat-5", date: fromDate, time: "15:30:00", country: "FR", country_name: "France", event: "PMI Servicios", impact: "2", actual: "54.2", forecast: "54.0", previous: "53.8" },
-        { id: "test-cat-6", date: fromDate, time: "16:00:00", country: "ES", country_name: "Spain", event: "Tasa de Desempleo", impact: "3", actual: "12.5%", forecast: "12.6%", previous: "12.7%" },
-        { id: "test-cat-7", date: fromDate, time: "18:00:00", country: "CN", country_name: "China", event: "Balanza Comercial", impact: "2", actual: "58.5B", forecast: "57.0B", previous: "56.2B" },
-        { id: "test-cat-8", date: fromDate, time: "20:00:00", country: "JP", country_name: "Japan", event: "Decisión de Tasas BdJ", impact: "1", actual: "-0.1%", forecast: "-0.1%", previous: "-0.1%" },
-        { id: "test-cat-9", date: fromDate, time: "09:45:00", country: "US", country_name: "United States", event: "Confianza del Consumidor", impact: "3", actual: "105.2", forecast: "105.0", previous: "104.8" },
-        { id: "test-cat-10", date: fromDate, time: "13:15:00", country: "EU", country_name: "Eurozone", event: "Inventarios de Petróleo", impact: "2", actual: "1.2M", forecast: "1.0M", previous: "0.9M" },
-      ];
-      
       if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
         console.log(`Using cached data for ${cacheKey.substring(0, 100)}...`);
         events = cached.data;
-        // Si el caché está vacío por rate limit, usar datos de prueba
-        if (events.length === 0) {
-          console.log(`[TEST MODE] Using test data for category debugging`);
-          events = testDataRaw;
-        }
       } else {
         // Si hay un fetch en curso para esta cache key, esperar a que termine
         if (fetchLocks.has(cacheKey)) {
@@ -739,46 +720,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Log category coverage (for monitoring) con detalles de categorización
+      // Log category coverage (for monitoring)
       const categorizedCount = normalizedEvents.filter(e => categorizeEvent(e.event).length > 0).length;
       const coveragePercent = normalizedEvents.length > 0 
         ? Math.round((categorizedCount / normalizedEvents.length) * 100) 
         : 0;
-      console.log(`\n=== Category Coverage: ${categorizedCount}/${normalizedEvents.length} events (${coveragePercent}%) ===`);
-      normalizedEvents.forEach(e => {
-        const cats = categorizeEvent(e.event);
-        console.log(`  - "${e.event}" → [${cats.join(', ')}]`);
-      });
+      console.log(`Category coverage: ${categorizedCount}/${normalizedEvents.length} events (${coveragePercent}%)`);
       
       // Apply category filter if specified
       if (categories && typeof categories === "string" && categories.trim()) {
         const selectedCategories = categories.split(',').map(c => c.trim());
-        const beforeFilter = normalizedEvents.length;
-        
-        // Contar eventos por categoría antes del filtro
-        const categoryCounts: Record<string, number> = {};
-        normalizedEvents.forEach(event => {
-          const cats = categorizeEvent(event.event);
-          cats.forEach(cat => {
-            categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-          });
-        });
-        
-        console.log(`\n=== Category Filter Applied ===`);
-        console.log(`Before filter: ${beforeFilter} events`);
-        console.log(`Available categories:`, categoryCounts);
-        console.log(`Selected categories: ${selectedCategories.join(', ')}`);
-        
         normalizedEvents = normalizedEvents.filter((event) => {
           const eventCategories = categorizeEvent(event.event);
-          const matches = selectedCategories.some(cat => eventCategories.includes(cat));
-          if (!matches) {
-            console.log(`  ✗ Filtered out: "${event.event}" (has: [${eventCategories.join(', ')}])`);
-          }
-          return matches;
+          return selectedCategories.some(cat => eventCategories.includes(cat));
         });
-        
-        console.log(`After category filter: ${normalizedEvents.length} events\n`);
       }
 
       // Apply search filter if specified
