@@ -1,7 +1,11 @@
+import { useState, useEffect } from "react";
 import { type EconomicEvent, countries } from "@shared/schema";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface EventsTableProps {
   events: EconomicEvent[];
@@ -21,6 +25,14 @@ const impactDots = {
 };
 
 export function EventsTable({ events, timezone }: EventsTableProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  // Resetear a página 1 cuando cambian los eventos (por filtros)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [events.length]);
+
   const getCountryName = (countryCode: string) => {
     const country = countries.find((c) => c.code === countryCode);
     return country?.name || countryCode;
@@ -43,6 +55,26 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
   const formatValue = (value: string | null) => {
     if (!value || value === "N/A" || value === "") return "—";
     return value;
+  };
+
+  // Paginación
+  const totalPages = Math.ceil(events.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedEvents = events.slice(startIndex, endIndex);
+
+  // Resetear a página 1 cuando cambian los eventos o el tamaño de página
+  const handlePageSizeChange = (newSize: string) => {
+    setPageSize(Number(newSize));
+    setCurrentPage(1);
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
   };
 
   return (
@@ -102,7 +134,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-background">
-            {events.map((event, index) => {
+            {paginatedEvents.map((event, index) => {
               const { date, time } = formatEventDateTime(event.date, event.time);
               return (
                 <tr
@@ -149,6 +181,69 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Controles de paginación */}
+      {events.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-4 sm:px-0">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Mostrando</span>
+            <span className="font-medium text-foreground">
+              {startIndex + 1}-{Math.min(endIndex, events.length)}
+            </span>
+            <span>de</span>
+            <span className="font-medium text-foreground">{events.length}</span>
+            <span>eventos</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Por página:</span>
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-[80px]" data-testid="select-page-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[300]">
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                data-testid="button-previous-page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline ml-1">Anterior</span>
+              </Button>
+              
+              <div className="flex items-center gap-2 px-2">
+                <span className="text-sm text-muted-foreground">Página</span>
+                <span className="text-sm font-medium text-foreground">
+                  {currentPage} de {totalPages}
+                </span>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                data-testid="button-next-page"
+              >
+                <span className="hidden sm:inline mr-1">Siguiente</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
