@@ -118,6 +118,11 @@ This application serves as an interactive Global Economic Calendar that displays
   **Known Limitations:**
   - Timezone handling: Event times from API are parsed as ISO strings without explicit timezone metadata. Display applies timezone conversion, but accuracy depends on API's source timezone (assumed to be browser-local time). Future enhancement: confirm API timezone format.
   - Watchlist feature: Backend infrastructure complete (PostgreSQL database, API endpoints, session management) but frontend UI not implemented due to time constraints. Ready for frontend development.
+  
+  **Future Enhancements (Translation System):**
+  - Consolidate duplicate dictionary entries (e.g., "Business", "Outlook" appear multiple times)
+  - Add phrase-level overrides for multi-word titles to improve fluency (e.g., "Business Optimism Index" → "Índice de Optimismo Empresarial")
+  - Some abbreviations produce awkward phrasing (e.g., "BdI Taylor Discurso") - consider contextual phrase replacements
 
 ## Watchlist/Favorites Feature Status
 
