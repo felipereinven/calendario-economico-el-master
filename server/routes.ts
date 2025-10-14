@@ -7,6 +7,108 @@ import { insertWatchlistCountrySchema, insertWatchlistEventSchema } from "@share
 const FINNWORLDS_API_KEY = process.env.FINNWORLDS_API_KEY;
 const FINNWORLDS_BASE_URL = "https://api.finnworlds.com/api/v1";
 
+// Diccionario de traducciones de términos económicos
+const economicTranslations: Record<string, string> = {
+  // Indicadores económicos generales
+  "GDP": "PIB",
+  "Gross Domestic Product": "Producto Interno Bruto",
+  "CPI": "IPC",
+  "Consumer Price Index": "Índice de Precios al Consumidor",
+  "PPI": "IPP",
+  "Producer Price Index": "Índice de Precios al Productor",
+  "Unemployment Rate": "Tasa de Desempleo",
+  "Jobless Claims": "Solicitudes de Desempleo",
+  "Non-Farm Payrolls": "Nóminas No Agrícolas",
+  "Retail Sales": "Ventas Minoristas",
+  "Industrial Production": "Producción Industrial",
+  "Manufacturing": "Manufactura",
+  "PMI": "PMI",
+  "Purchasing Managers Index": "Índice de Gerentes de Compras",
+  "Trade Balance": "Balanza Comercial",
+  "Current Account": "Cuenta Corriente",
+  "Budget": "Presupuesto",
+  "Deficit": "Déficit",
+  "Surplus": "Superávit",
+  
+  // Bancos centrales y tasas
+  "Interest Rate": "Tasa de Interés",
+  "Fed": "Fed",
+  "Federal Reserve": "Reserva Federal",
+  "ECB": "BCE",
+  "European Central Bank": "Banco Central Europeo",
+  "BoC": "BdC",
+  "Bank of Canada": "Banco de Canada",
+  "BoE": "BdI",
+  "Bank of England": "Banco de Inglaterra",
+  "BoJ": "BdJ",
+  "Bank of Japan": "Banco de Japón",
+  "FOMC": "FOMC",
+  "Monetary Policy": "Política Monetaria",
+  "Rate Decision": "Decisión de Tasas",
+  "Meeting Minutes": "Actas de Reunión",
+  "Speech": "Discurso",
+  "Press Conference": "Conferencia de Prensa",
+  
+  // Vivienda y construcción
+  "Building Permits": "Permisos de Construcción",
+  "Housing Starts": "Inicio de Viviendas",
+  "Home Sales": "Ventas de Viviendas",
+  "Existing Home Sales": "Ventas de Viviendas Existentes",
+  "New Home Sales": "Ventas de Viviendas Nuevas",
+  "Housing Price Index": "Índice de Precios de Vivienda",
+  "Mortgage": "Hipoteca",
+  
+  // Confianza y sentimiento
+  "Consumer Confidence": "Confianza del Consumidor",
+  "Business Confidence": "Confianza Empresarial",
+  "Sentiment": "Sentimiento",
+  "Survey": "Encuesta",
+  
+  // Otros términos comunes
+  "Preliminary": "Preliminar",
+  "Final": "Final",
+  "Revised": "Revisado",
+  "Flash": "Flash",
+  "YoY": "Anual",
+  "MoM": "Mensual",
+  "QoQ": "Trimestral",
+  "Annual": "Anual",
+  "Monthly": "Mensual",
+  "Quarterly": "Trimestral",
+  "Change": "Cambio",
+  "Growth": "Crecimiento",
+  "Index": "Índice",
+  "Report": "Reporte",
+  "Data": "Datos",
+  "Forecast": "Pronóstico",
+  "Actual": "Real",
+  "Previous": "Anterior",
+  "Core": "Subyacente",
+  "Inflation": "Inflación",
+  "Exports": "Exportaciones",
+  "Imports": "Importaciones",
+  "Sales": "Ventas",
+  "Orders": "Pedidos",
+  "Inventories": "Inventarios",
+  "Production": "Producción",
+  "Capacity Utilization": "Utilización de Capacidad",
+};
+
+// Función para traducir nombres de eventos
+function translateEventName(eventName: string): string {
+  let translated = eventName;
+  
+  // Reemplazar términos conocidos (ordenar por longitud descendente para evitar reemplazos parciales)
+  const sortedKeys = Object.keys(economicTranslations).sort((a, b) => b.length - a.length);
+  
+  for (const key of sortedKeys) {
+    const regex = new RegExp(key, 'gi');
+    translated = translated.replace(regex, economicTranslations[key]);
+  }
+  
+  return translated;
+}
+
 interface FinnworldsEvent {
   id?: string;
   date: string;
@@ -160,13 +262,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (event.impact === "2") impactLevel = "medium";
         else if (event.impact === "3") impactLevel = "low";
         
+        // Traducir nombre del evento al español
+        const eventNameEnglish = event.report_name || event.event || "Economic Event";
+        const eventNameSpanish = translateEventName(eventNameEnglish);
+        
         return {
           id: event.id || `event-${index}`,
           date: eventDate || format(new Date(), "yyyy-MM-dd"),
           time: eventTime || "00:00:00",
           country: event.iso_country_code || event.country || "US",
           countryName: event.country || event.country_name || "Unknown",
-          event: event.report_name || event.event || "Economic Event",
+          event: eventNameSpanish,
           impact: impactLevel,
           actual: event.actual || null,
           forecast: event.consensus || event.forecast || null,
