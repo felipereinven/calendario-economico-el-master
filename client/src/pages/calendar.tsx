@@ -114,6 +114,7 @@ export default function CalendarPage() {
                 </SelectTrigger>
                 <SelectContent className="z-[300]">
                   <SelectItem value="UTC">UTC</SelectItem>
+                  <SelectItem value="America/Bogota">Bogotá</SelectItem>
                   <SelectItem value="America/New_York">New York</SelectItem>
                   <SelectItem value="America/Chicago">Chicago</SelectItem>
                   <SelectItem value="America/Los_Angeles">Los Angeles</SelectItem>

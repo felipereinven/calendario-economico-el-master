@@ -57,6 +57,15 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
     return value;
   };
 
+  const translateImpact = (impact: string) => {
+    const translations: Record<string, string> = {
+      high: "Alta",
+      medium: "Media",
+      low: "Baja",
+    };
+    return translations[impact] || impact;
+  };
+
   // Paginación
   const totalPages = Math.ceil(events.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -160,10 +169,10 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                   <td className="px-4 py-4 whitespace-nowrap text-center" data-testid={`badge-impact-${index}`}>
                     <Badge
                       variant="outline"
-                      className={`${impactColors[event.impact]} gap-1.5 capitalize`}
+                      className={`${impactColors[event.impact]} gap-1.5`}
                     >
                       <span className={`w-2 h-2 rounded-full ${impactDots[event.impact]}`} />
-                      {event.impact}
+                      {translateImpact(event.impact)}
                     </Badge>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-foreground" data-testid={`text-actual-${index}`}>
