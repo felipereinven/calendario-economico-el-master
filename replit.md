@@ -15,8 +15,9 @@ This application serves as an interactive Global Economic Calendar that displays
     - ✅ Sistema inteligente de categorización basado en palabras clave en nombres de eventos
     - ✅ Filtros activos muestran categorías seleccionadas con iconos
   
-  - **Países Predeterminados Configurados**:
-    - ✅ Cuando no se selecciona ningún país, consulta automáticamente: Estados Unidos, Zona Euro, Alemania, Francia, España, Reino Unido
+  - **Filtro "Todos los Países" Configurado**:
+    - ✅ Cuando se hace clic en "Todos los países", consulta TODOS los países disponibles en la lista
+    - ✅ Países incluidos: Estados Unidos, Zona Euro, Alemania, Francia, España, Reino Unido, Canadá, Japón, China, India, Brasil
     - ✅ España (ESP) y Zona Euro (EUR) agregados al mapeo de países
     - ✅ Mapeo completo: USA→United_States, EUR→Eurozone, GBR→United_Kingdom, DEU→Germany, FRA→France, ESP→Spain, CAD→Canada, JPN→Japan, CHN→China, IND→India, BRA→Brazil
   

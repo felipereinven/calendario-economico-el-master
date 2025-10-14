@@ -225,8 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return countryCodeToName[countryCode] || countryCode.replace(/ /g, '_');
         });
       } else {
-        // Si no hay países seleccionados, usar los principales (Estados Unidos, Zona Euro, Alemania, Francia, España, Reino Unido)
-        targetCountries = ['United_States', 'Eurozone', 'Germany', 'France', 'Spain', 'United_Kingdom'];
+        // Si no hay países seleccionados ("Todos los países"), consultar TODOS los países disponibles
+        targetCountries = Object.values(countryCodeToName);
       }
 
       // Generar todas las fechas del rango
