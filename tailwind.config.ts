@@ -81,6 +81,11 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        impact: {
+          high: "hsl(var(--impact-high) / <alpha-value>)",
+          medium: "hsl(var(--impact-medium) / <alpha-value>)",
+          low: "hsl(var(--impact-low) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
