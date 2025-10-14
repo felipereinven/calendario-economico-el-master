@@ -507,6 +507,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       });
 
+      // Apply impact filter if specified
+      if (impacts && typeof impacts === "string" && impacts.trim()) {
+        const selectedImpacts = impacts.split(',').map(i => i.trim());
+        normalizedEvents = normalizedEvents.filter((event) => {
+          return selectedImpacts.includes(event.impact);
+        });
+      }
+
       // Apply category filter if specified
       if (categories && typeof categories === "string" && categories.trim()) {
         const selectedCategories = categories.split(',').map(c => c.trim());
