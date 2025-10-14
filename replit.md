@@ -8,6 +8,14 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 6): ✅ Actualización Automática Diaria
+  - **Detección de Cambio de Día**:
+    - ✅ Sistema detecta automáticamente cuando cambia el día (de medianoche a medianoche)
+    - ✅ Actualiza los datos automáticamente cuando detecta un nuevo día
+    - ✅ Revisa cada minuto (60 segundos) si ha cambiado el día
+    - ✅ Funciona en segundo plano sin intervención del usuario
+    - ✅ Asegura que siempre se muestren los datos del día actual
+
 - **October 14, 2025** (Update 5): ✅ Banderas de Países Agregadas
   - **Banderas en UI**:
     - ✅ Banderas de países agregadas en dropdown de filtros

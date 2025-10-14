@@ -23,6 +23,7 @@ export default function CalendarPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationImpactLevels, setNotificationImpactLevels] = useState<("high" | "medium" | "low")[]>(["high"]);
+  const [lastCheckedDate, setLastCheckedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
 
   // Build query string from filters
   const queryParams = new URLSearchParams();
@@ -59,6 +60,23 @@ export default function CalendarPage() {
       setLastUpdated(new Date(dataUpdatedAt));
     }
   }, [dataUpdatedAt, isLoading]);
+  
+  // Detectar cambio de día y actualizar automáticamente
+  useEffect(() => {
+    const checkDayChange = () => {
+      const currentDate = format(new Date(), "yyyy-MM-dd");
+      if (currentDate !== lastCheckedDate) {
+        console.log(`Nuevo día detectado: ${currentDate}. Actualizando datos...`);
+        setLastCheckedDate(currentDate);
+        refetch(); // Actualizar datos automáticamente
+      }
+    };
+
+    // Revisar cada minuto si cambió el día
+    const interval = setInterval(checkDayChange, 60000); // 60 segundos
+
+    return () => clearInterval(interval);
+  }, [lastCheckedDate, refetch]);
   
   // Notification system
   const { newEventCount, clearNotificationBadge } = useNotifications(events, {
