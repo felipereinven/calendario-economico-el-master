@@ -1,0 +1,67 @@
+. Objetivo del Proyecto
+Crea una aplicación web que sirva como un Calendario Económico Global Interactivo. El objetivo es replicar la funcionalidad y la estética profesional de plataformas como Investing.com, tomando como referencia la estructura de filtros y el look and feel de la página proporcionada: https://calendario.elmaster.pro/.
+
+2. Stack Tecnológico
+Utiliza un stack moderno y eficiente para una implementación rápida en Replit (ej. Node.js/Express para un proxy, HTML/Tailwind CSS/Vanilla JS para el frontend).
+
+Frontend: HTML, Tailwind CSS (para un diseño limpio y rápido), y JavaScript (Vanilla JS o un framework ligero) para la interactividad.
+
+Backend (Proxy Recomendado): Utiliza un servidor simple (e.g., Node.js con Express o Python con Flask) para gestionar las llamadas a la API desde el backend y ocultar la API Key, previniendo la exposición en el código del cliente.
+
+3. Detalles de la API y Data
+Utiliza la API de Finnworlds para obtener los datos de los eventos económicos.
+
+API Key: 6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de
+
+Endpoint: Asume un endpoint estándar para calendarios económicos (e.g., /economic-calendar/events). Investiga la documentación oficial de Finnworlds para la URL exacta.
+
+Procesamiento de Datos: La tabla debe mostrar las siguientes columnas, procesando los datos de la respuesta JSON de la API:
+
+Fecha
+
+Hora (Asegúrate de manejar la conversión de zona horaria)
+
+País (Con su bandera correspondiente)
+
+Evento (Nombre del evento)
+
+Impacto (Clasificación de volatilidad)
+
+Real (Dato actual publicado)
+
+Previsión (Dato esperado por el consenso)
+
+Anterior (Dato de la publicación anterior)
+
+4. Características de Diseño y Funcionalidad
+La interfaz debe incluir un "Centro de Control" con los siguientes filtros en la parte superior:
+
+A. Filtros Obligatorios
+País/Región: Un selector múltiple que permita filtrar por códigos de país (ej. USD, EUR, JPY).
+
+Nivel de Impacto: Botones de selección para filtrar por el nivel de volatilidad, con diferenciación visual clara:
+
+🔴 Alta (Alto impacto/Alta volatilidad)
+
+🟡 Media (Impacto moderado)
+
+🟢 Baja (Bajo impacto)
+
+Período de Tiempo: Botones/pestañas para filtrar rápidamente por rango de fechas:
+
+Hoy
+
+Esta Semana
+
+Próxima Semana
+
+Este Mes
+
+Búsqueda Global: Un campo de texto para buscar eventos por nombre o país.
+
+B. Interfaz de Usuario (UX)
+Tabla Responsiva: La tabla de eventos debe ser scrollable horizontalmente en dispositivos móviles.
+
+Gestión de Zona Horaria: Implementa una función para detectar la zona horaria del usuario y mostrar la hora de los eventos convertida a esa hora local. Un botón de configuración (⏰) debe permitir al usuario cambiar la zona horaria manualmente si lo desea.
+
+Carga y Estado: Mostrar un spinner o mensaje de "Cargando..." mientras se obtienen los datos.
