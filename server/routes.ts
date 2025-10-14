@@ -28,9 +28,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate API key presence
       if (!FINNWORLDS_API_KEY) {
-        console.warn("FINNWORLDS_API_KEY not configured, using fallback data");
-        const fallbackData = getFallbackEvents();
-        return res.json(applyClientFilters(fallbackData, { countries, impacts, search }));
+        console.error("FINNWORLDS_API_KEY not configured");
+        return res.status(500).json({ 
+          error: "API key not configured",
+          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+        });
       }
 
       // Calculate date range for API request
@@ -90,22 +92,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (response.status === 401 || response.status === 403) {
           console.error(`Finnworlds API authentication error: ${response.status}`);
-          const fallbackData = getFallbackEvents();
-          return res.json(applyClientFilters(fallbackData, { countries, impacts, search }));
+          return res.status(500).json({ 
+            error: "API authentication failed",
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+          });
         }
         
         if (!response.ok) {
           console.error(`Finnworlds API error: ${response.status} ${response.statusText}`);
-          const fallbackData = getFallbackEvents();
-          return res.json(applyClientFilters(fallbackData, { countries, impacts, search }));
+          return res.status(500).json({ 
+            error: "API request failed",
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+          });
         }
         
         const data = await response.json();
         events = Array.isArray(data) ? data : (data.events || []);
       } catch (apiError) {
         console.error("Error fetching from Finnworlds API:", apiError);
-        const fallbackData = getFallbackEvents();
-        return res.json(applyClientFilters(fallbackData, { countries, impacts, search }));
+        return res.status(500).json({ 
+          error: "API connection failed",
+          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+        });
       }
 
       // Normalize the response format with defensive time parsing

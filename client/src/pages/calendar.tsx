@@ -8,9 +8,8 @@ import { NotificationSettings } from "@/components/calendar/notification-setting
 import { useNotifications } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw, Download } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
-import { exportToCSV } from "@/lib/export";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -77,10 +76,10 @@ export default function CalendarPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl font-semibold text-foreground">
-                Global Economic Calendar
+                Calendario Económico Global
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                Real-time economic events and market indicators across 196 countries
+                Eventos económicos en tiempo real e indicadores de mercado de 196 países
               </p>
             </div>
             
@@ -88,21 +87,9 @@ export default function CalendarPage() {
               {/* Last Updated */}
               {lastUpdated && (
                 <div className="text-xs text-muted-foreground mr-2" data-testid="text-last-updated">
-                  Updated: {format(lastUpdated, "HH:mm:ss")}
+                  Actualizado: {format(lastUpdated, "HH:mm:ss")}
                 </div>
               )}
-              
-              {/* Export Button */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => events && exportToCSV(events, filters.timezone || "UTC")}
-                disabled={!events || events.length === 0}
-                data-testid="button-export"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
 
               {/* Notification Settings */}
               <NotificationSettings
@@ -123,7 +110,7 @@ export default function CalendarPage() {
                 data-testid="button-refresh"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-                Refresh
+                Actualizar
               </Button>
               
               {/* Auto-refresh Interval Selector */}
@@ -132,13 +119,13 @@ export default function CalendarPage() {
                 onValueChange={(value) => setRefreshInterval(Number(value))}
               >
                 <SelectTrigger className="w-[140px]" data-testid="select-refresh-interval">
-                  <SelectValue placeholder="Auto-refresh" />
+                  <SelectValue placeholder="Auto-actualizar" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Off</SelectItem>
-                  <SelectItem value="30000">30 seconds</SelectItem>
-                  <SelectItem value="60000">1 minute</SelectItem>
-                  <SelectItem value="300000">5 minutes</SelectItem>
+                  <SelectItem value="0">Desactivado</SelectItem>
+                  <SelectItem value="30000">30 segundos</SelectItem>
+                  <SelectItem value="60000">1 minuto</SelectItem>
+                  <SelectItem value="300000">5 minutos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -158,7 +145,7 @@ export default function CalendarPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24" data-testid="loading-state">
             <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-            <p className="text-sm text-muted-foreground">Loading economic events...</p>
+            <p className="text-sm text-muted-foreground">Cargando eventos económicos...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-24" data-testid="error-state">
@@ -167,8 +154,8 @@ export default function CalendarPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <p className="text-sm text-foreground font-medium mb-1">Failed to load events</p>
-            <p className="text-sm text-muted-foreground">Please try again later</p>
+            <p className="text-sm text-foreground font-medium mb-1">Error al cargar los datos económicos desde Finnworlds API</p>
+            <p className="text-sm text-muted-foreground">Verifica la conexión. Los datos pueden no estar actualizados.</p>
           </div>
         ) : events && events.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24" data-testid="empty-state">
@@ -177,8 +164,8 @@ export default function CalendarPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p className="text-sm text-foreground font-medium mb-1">No events found</p>
-            <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+            <p className="text-sm text-foreground font-medium mb-1">No se encontraron eventos</p>
+            <p className="text-sm text-muted-foreground">Intenta ajustar los filtros para ver más eventos económicos</p>
           </div>
         ) : (
           <EventsTable events={events || []} timezone={filters.timezone || "UTC"} />

@@ -55,49 +55,49 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Date
+                Fecha
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Time
+                Hora
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Country
+                País
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Event
+                Evento
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-center text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Impact
+                Impacto
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Actual
+                Real
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Forecast
+                Pronóstico
               </th>
               <th
                 scope="col"
                 className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Previous
+                Anterior
               </th>
             </tr>
           </thead>

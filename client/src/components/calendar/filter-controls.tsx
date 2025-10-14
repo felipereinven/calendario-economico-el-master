@@ -17,16 +17,16 @@ interface FilterControlsProps {
 }
 
 const impactLevels = [
-  { value: "high" as const, label: "High", color: "bg-impact-high" },
-  { value: "medium" as const, label: "Medium", color: "bg-impact-medium" },
-  { value: "low" as const, label: "Low", color: "bg-impact-low" },
+  { value: "high" as const, label: "Alta", color: "bg-impact-high" },
+  { value: "medium" as const, label: "Media", color: "bg-impact-medium" },
+  { value: "low" as const, label: "Baja", color: "bg-impact-low" },
 ];
 
 const timePeriods = [
-  { value: "today" as const, label: "Today" },
-  { value: "thisWeek" as const, label: "This Week" },
-  { value: "nextWeek" as const, label: "Next Week" },
-  { value: "thisMonth" as const, label: "This Month" },
+  { value: "today" as const, label: "Hoy" },
+  { value: "thisWeek" as const, label: "Esta Semana" },
+  { value: "nextWeek" as const, label: "Próxima Semana" },
+  { value: "thisMonth" as const, label: "Este Mes" },
 ];
 
 export function FilterControls({ filters, onFilterChange }: FilterControlsProps) {
@@ -59,7 +59,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
         {/* Country Filter */}
         <div className="flex-1 min-w-0">
           <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-            Country / Region
+            País / Región
           </label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -70,13 +70,13 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
               >
                 <span className="truncate">
                   {filters.countries && filters.countries.length > 0
-                    ? `${filters.countries.length} selected`
-                    : "All countries"}
+                    ? `${filters.countries.length} seleccionados`
+                    : "Todos los países"}
                 </span>
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start">
+            <DropdownMenuContent className="w-56 z-[200]" align="start">
               {countries.map((country) => (
                 <DropdownMenuCheckboxItem
                   key={country.code}
@@ -95,13 +95,13 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
         {/* Search */}
         <div className="flex-1 min-w-0">
           <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-            Search Events
+            Buscar Eventos
           </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search by event or country..."
+              placeholder="Buscar por evento o país..."
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9"
@@ -114,7 +114,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       {/* Impact Level Filter */}
       <div>
         <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-          Impact Level
+          Nivel de Impacto
         </label>
         <div className="flex flex-wrap gap-2">
           {impactLevels.map((level) => (
@@ -136,7 +136,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       {/* Time Period Filter */}
       <div>
         <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-          Time Period
+          Período de Tiempo
         </label>
         <div className="flex flex-wrap gap-2">
           {timePeriods.map((period) => (
@@ -158,7 +158,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
         (filters.impacts && filters.impacts.length > 0) ||
         filters.search) && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground">Active filters:</span>
+          <span className="text-xs text-muted-foreground">Filtros activos:</span>
           {filters.countries?.map((code) => {
             const country = countries.find((c) => c.code === code);
             return country ? (
@@ -178,7 +178,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
           })}
           {filters.search && (
             <Badge variant="secondary">
-              Search: {filters.search}
+              Búsqueda: {filters.search}
             </Badge>
           )}
         </div>

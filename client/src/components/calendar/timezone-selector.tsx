@@ -64,19 +64,19 @@ export function TimezoneSelector({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Select Timezone</DialogTitle>
+          <DialogTitle>Seleccionar Zona Horaria</DialogTitle>
           <DialogDescription>
-            Choose your preferred timezone to display event times
+            Elige tu zona horaria preferida para mostrar los horarios de los eventos
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground" data-testid="text-current-timezone">
-              Current timezone: <span className="text-muted-foreground">{selectedLabel}</span>
+              Zona horaria actual: <span className="text-muted-foreground">{selectedLabel}</span>
             </label>
             <Select value={tempTimezone} onValueChange={setTempTimezone}>
               <SelectTrigger data-testid="select-timezone">
-                <SelectValue placeholder="Select timezone" />
+                <SelectValue placeholder="Seleccionar zona horaria" />
               </SelectTrigger>
               <SelectContent>
                 {commonTimezones.map((tz) => (
@@ -89,10 +89,10 @@ export function TimezoneSelector({
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} data-testid="button-timezone-cancel">
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={handleApply} data-testid="button-timezone-apply">
-              Apply
+              Aplicar
             </Button>
           </div>
         </div>
