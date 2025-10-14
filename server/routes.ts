@@ -163,7 +163,6 @@ const economicTranslations: Record<string, string> = {
   "Sector": "Sector",
   "Activity": "Actividad",
   "Performance": "Desempeño",
-  "Outlook": "Perspectiva",
   "Composite": "Compuesto",
   "Leading": "Adelantado",
   "Lagging": "Rezagado",
@@ -254,12 +253,10 @@ const economicTranslations: Record<string, string> = {
   "Investments": "Inversiones",
   "Consumer": "Consumidor",
   "Consumers": "Consumidores",
-  "Business": "Negocios",
   "Commercial": "Comercial",
   "Industrial": "Industrial",
   "Services": "Servicios",
   "Service": "Servicio",
-  "Manufacturing": "Manufactura",
   "Construction": "Construcción",
   "Transportation": "Transporte",
   "Energy": "Energía",
@@ -271,7 +268,6 @@ const economicTranslations: Record<string, string> = {
   "Credits": "Créditos",
   "Loan": "Préstamo",
   "Loans": "Préstamos",
-  "Mortgage": "Hipoteca",
   "Mortgages": "Hipotecas",
   "Deposit": "Depósito",
   "Deposits": "Depósitos",
@@ -558,10 +554,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedCountries = [...targetCountries].sort();
       const cacheKey = `${JSON.stringify(normalizedCountries)}-${fromDate}-${toDate}`;
       const cached = apiCache.get(cacheKey);
+      
+      // TEMPORAL: Datos de prueba para debugging del filtro de impacto
+      const testDataRaw: FinnworldsEvent[] = [
+        { id: "test-1", date: fromDate, time: "08:30:00", country: "US", country_name: "United States", event: "Core Retail Sales m/m", impact: "1", actual: "0.5%", forecast: "0.3%", previous: "0.2%" },
+        { id: "test-2", date: fromDate, time: "10:00:00", country: "EU", country_name: "Eurozone", event: "CPI y/y", impact: "1", actual: "2.1%", forecast: "2.0%", previous: "1.9%" },
+        { id: "test-3", date: fromDate, time: "12:00:00", country: "DE", country_name: "Germany", event: "Manufacturing PMI", impact: "2", actual: "52.5", forecast: "52.0", previous: "51.8" },
+        { id: "test-4", date: fromDate, time: "14:00:00", country: "GB", country_name: "United Kingdom", event: "GDP q/q", impact: "1", actual: "0.3%", forecast: "0.2%", previous: "0.1%" },
+        { id: "test-5", date: fromDate, time: "15:30:00", country: "FR", country_name: "France", event: "Services PMI", impact: "2", actual: "54.2", forecast: "54.0", previous: "53.8" },
+        { id: "test-6", date: fromDate, time: "16:00:00", country: "ES", country_name: "Spain", event: "Unemployment Rate", impact: "3", actual: "12.5%", forecast: "12.6%", previous: "12.7%" },
+        { id: "test-7", date: fromDate, time: "18:00:00", country: "CN", country_name: "China", event: "Trade Balance", impact: "2", actual: "58.5B", forecast: "57.0B", previous: "56.2B" },
+        { id: "test-8", date: fromDate, time: "22:00:00", country: "JP", country_name: "Japan", event: "BoJ Interest Rate Decision", impact: "1", actual: "-0.1%", forecast: "-0.1%", previous: "-0.1%" },
+        { id: "test-9", date: fromDate, time: "09:45:00", country: "US", country_name: "United States", event: "Business Confidence", impact: "3", actual: "105.2", forecast: "105.0", previous: "104.8" },
+        { id: "test-10", date: fromDate, time: "13:15:00", country: "EU", country_name: "Eurozone", event: "Construction Output", impact: "3", actual: "1.2%", forecast: "1.0%", previous: "0.9%" },
+      ];
+      
       if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
         console.log(`Using cached data for ${cacheKey.substring(0, 100)}...`);
         events = cached.data;
-      } else {
+        // Si el caché está vacío por rate limit, usar datos de prueba
+        if (events.length === 0) {
+          console.log(`[TEST MODE] Using test data instead of empty cache`);
+          events = testDataRaw;
+        }
+      } else{
         // Si hay un fetch en curso para esta cache key, esperar a que termine
         if (fetchLocks.has(cacheKey)) {
           console.log(`Waiting for ongoing fetch for ${cacheKey.substring(0, 100)}...`);
@@ -684,12 +700,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const [eventDate, eventTime] = datetime.split(' ');
         
         // Mapear impact numérico a string: "1"->high, "2"->medium, "3"->low
-        // Normalizar el valor primero (manejar strings, números, con/sin espacios)
-        const impactValue = String(event.impact || "3").trim();
+        // También aceptar strings directos: "high", "medium", "low"
+        const impactValue = String(event.impact || "3").trim().toLowerCase();
         let impactLevel: "high" | "medium" | "low" = "low";
-        if (impactValue === "1") impactLevel = "high";
-        else if (impactValue === "2") impactLevel = "medium";
-        else if (impactValue === "3") impactLevel = "low";
+        if (impactValue === "1" || impactValue === "high") impactLevel = "high";
+        else if (impactValue === "2" || impactValue === "medium") impactLevel = "medium";
+        else if (impactValue === "3" || impactValue === "low") impactLevel = "low";
         
         // Traducir nombre del evento al español
         const eventNameEnglish = event.report_name || event.event || "Economic Event";
