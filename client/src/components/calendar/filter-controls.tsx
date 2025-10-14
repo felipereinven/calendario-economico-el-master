@@ -182,45 +182,48 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
         </div>
       </div>
 
-      {/* Impact Level Filter */}
-      <div>
-        <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-          Nivel de Impacto
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {impactLevels.map((level) => (
-            <Button
-              key={level.value}
-              variant={filters.impacts?.includes(level.value) ? "default" : "outline"}
-              size="sm"
-              onClick={() => toggleImpact(level.value)}
-              className="gap-2"
-              data-testid={`button-impact-${level.value}`}
-            >
-              <span className={`w-3 h-3 rounded-full ${level.color}`} />
-              {level.label}
-            </Button>
-          ))}
+      {/* Impact Level and Time Period Filters */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Impact Level Filter */}
+        <div>
+          <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+            Nivel de Impacto
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {impactLevels.map((level) => (
+              <Button
+                key={level.value}
+                variant={filters.impacts?.includes(level.value) ? "default" : "outline"}
+                size="sm"
+                onClick={() => toggleImpact(level.value)}
+                className="gap-2"
+                data-testid={`button-impact-${level.value}`}
+              >
+                <span className={`w-3 h-3 rounded-full ${level.color}`} />
+                {level.label}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Time Period Filter */}
-      <div>
-        <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-          Período de Tiempo
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {timePeriods.map((period) => (
-            <Button
-              key={period.value}
-              variant={filters.dateRange === period.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => onFilterChange({ dateRange: period.value })}
-              data-testid={`button-period-${period.value}`}
-            >
-              {period.label}
-            </Button>
-          ))}
+        {/* Time Period Filter */}
+        <div>
+          <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+            Período de Tiempo
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {timePeriods.map((period) => (
+              <Button
+                key={period.value}
+                variant={filters.dateRange === period.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => onFilterChange({ dateRange: period.value })}
+                data-testid={`button-period-${period.value}`}
+              >
+                {period.label}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
