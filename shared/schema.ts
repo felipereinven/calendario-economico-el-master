@@ -45,7 +45,7 @@ export const filterOptionsSchema = z.object({
 
 export type FilterOptions = z.infer<typeof filterOptionsSchema>;
 
-// Country options for filters
+// Country options for filters (8 principales economías)
 export const countries = [
   { code: "USA", name: "Estados Unidos", flag: "🇺🇸" },
   { code: "EUR", name: "Zona Euro", flag: "🇪🇺" },
@@ -53,11 +53,8 @@ export const countries = [
   { code: "FRA", name: "Francia", flag: "🇫🇷" },
   { code: "ESP", name: "España", flag: "🇪🇸" },
   { code: "GBR", name: "Reino Unido", flag: "🇬🇧" },
-  { code: "CAD", name: "Canadá", flag: "🇨🇦" },
-  { code: "JPN", name: "Japón", flag: "🇯🇵" },
   { code: "CHN", name: "China", flag: "🇨🇳" },
-  { code: "IND", name: "India", flag: "🇮🇳" },
-  { code: "BRA", name: "Brasil", flag: "🇧🇷" },
+  { code: "JPN", name: "Japón", flag: "🇯🇵" },
 ] as const;
 
 export type CountryOption = typeof countries[number];

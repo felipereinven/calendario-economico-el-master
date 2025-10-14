@@ -464,19 +464,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       apiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
       apiUrl.searchParams.set("date", fromDate);
       
-      // Mapeo de códigos ISO a nombres de país que Finnworlds acepta
+      // Mapeo de códigos ISO a nombres de país que Finnworlds acepta (8 principales economías)
       const countryCodeToName: Record<string, string> = {
         'USA': 'United_States',
         'EUR': 'Eurozone',
-        'GBR': 'United_Kingdom',
         'DEU': 'Germany',
         'FRA': 'France',
         'ESP': 'Spain',
-        'CAD': 'Canada',
-        'JPN': 'Japan',
+        'GBR': 'United_Kingdom',
         'CHN': 'China',
-        'IND': 'India',
-        'BRA': 'Brazil',
+        'JPN': 'Japan',
+      };
+      
+      // Mapeo inverso: nombre de Finnworlds a código ISO-3 (para normalizar respuestas)
+      const countryNameToCode: Record<string, string> = {
+        'United_States': 'USA',
+        'United States': 'USA',
+        'Eurozone': 'EUR',
+        'Germany': 'DEU',
+        'France': 'FRA',
+        'Spain': 'ESP',
+        'United_Kingdom': 'GBR',
+        'United Kingdom': 'GBR',
+        'China': 'CHN',
+        'Japan': 'JPN',
+      };
+      
+      // Mapeo de códigos ISO-2 a ISO-3 (Finnworlds devuelve ISO-2)
+      const iso2ToIso3: Record<string, string> = {
+        'US': 'USA',
+        'EU': 'EUR',
+        'DE': 'DEU',
+        'FR': 'FRA',
+        'ES': 'ESP',
+        'GB': 'GBR',
+        'CN': 'CHN',
+        'JP': 'JPN',
       };
       
       // Determinar qué países consultar
@@ -505,10 +528,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Limitar días según el rango para optimizar rate limiting
-      // Con límite de 20 req/min (1 cada 3 seg), 11 países × N días = tiempo de carga
-      // "Hoy": 1 día × 11 países = 11 req = ~33 segundos (aceptable)
-      // "Esta Semana": 3 días × 11 países = 33 req = ~99 segundos (límite razonable)
-      // "Este Mes": 7 días × 11 países = 77 req = ~231 segundos (demasiado, limitar a 3 días)
+      // Con límite de 20 req/min (1 cada 3 seg), 8 países × N días = tiempo de carga
+      // "Hoy": 1 día × 8 países = 8 req = ~24 segundos (óptimo)
+      // "Esta Semana": 3 días × 8 países = 24 req = ~72 segundos (aceptable)
+      // "Este Mes": 3 días × 8 países = 24 req = ~72 segundos (aceptable)
       const maxDays = dateRange === 'today' ? 1 : dateRange === 'this-week' ? 3 : 3;
       const datesToFetch = dates.slice(0, maxDays);
 
@@ -672,12 +695,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const eventNameEnglish = event.report_name || event.event || "Economic Event";
         const eventNameSpanish = translateEventName(eventNameEnglish);
         
+        // Normalizar código de país: Finnworlds devuelve ISO-2, necesitamos ISO-3
+        const rawCountry = event.country || event.country_name || "Unknown";
+        const isoCode = event.iso_country_code || event.country || rawCountry;
+        // Intentar mapeo ISO-2 a ISO-3, luego nombre a código, finalmente usar el raw
+        const countryCode = iso2ToIso3[isoCode] || countryNameToCode[rawCountry] || isoCode;
+        
         return {
           id: event.id || `event-${index}`,
           date: eventDate || format(new Date(), "yyyy-MM-dd"),
           time: eventTime || "00:00:00",
-          country: event.iso_country_code || event.country || "US",
-          countryName: event.country || event.country_name || "Unknown",
+          country: countryCode,
+          countryName: rawCountry,
           event: eventNameSpanish,
           impact: impactLevel,
           actual: event.actual || null,
@@ -705,6 +734,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`After impact filter: ${normalizedEvents.length} events`);
       }
 
+      // Log category coverage (for monitoring)
+      const categorizedCount = normalizedEvents.filter(e => categorizeEvent(e.event).length > 0).length;
+      const coveragePercent = normalizedEvents.length > 0 
+        ? Math.round((categorizedCount / normalizedEvents.length) * 100) 
+        : 0;
+      console.log(`Category coverage: ${categorizedCount}/${normalizedEvents.length} events (${coveragePercent}%)`);
+      
       // Apply category filter if specified
       if (categories && typeof categories === "string" && categories.trim()) {
         const selectedCategories = categories.split(',').map(c => c.trim());

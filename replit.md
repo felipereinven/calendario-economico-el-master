@@ -2,7 +2,7 @@
 
 ## Overview
 
-This application is a professional web application designed to track real-time global economic events and market indicators across 196 countries. Its primary purpose is to provide users with a comprehensive, interactive economic calendar featuring advanced filtering, timezone management, and a clean, responsive interface. The project aims to deliver a tool for financial professionals and enthusiasts to monitor critical economic data, similar to platforms like Investing.com.
+This application is a professional web application designed to track real-time global economic events and market indicators from 8 major economies (United States, Eurozone, Germany, France, Spain, United Kingdom, China, and Japan). Its primary purpose is to provide users with a comprehensive, interactive economic calendar featuring advanced filtering, timezone management, and a clean, responsive interface. The project aims to deliver a tool for financial professionals and enthusiasts to monitor critical economic data, similar to platforms like Investing.com.
 
 ## User Preferences
 
@@ -37,7 +37,7 @@ The application is built with a modern web technology stack, ensuring a responsi
 - **Localization**: Complete Spanish translation for all UI elements, labels, and messages. No English text is present. SVG icons are used instead of emojis.
 
 ### Feature Specifications
-- **Filter Controls**: Multi-select country dropdown with flags, impact level toggles (High/Medium/Low), time period tabs (Today, This Week, Next Week, This Month), and global search. Intelligent categorization of events based on keywords.
+- **Filter Controls**: Multi-select country dropdown with flags, impact level toggles (High/Medium/Low), time period tabs (Today, This Week, Next Week, This Month), global search, and economic category filter (9 categories: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, PIB y Crecimiento, Comercio Exterior, Energía, Confianza). Intelligent categorization of events based on 100+ Spanish/English keywords with 86% coverage (32 of 37 events categorized on average).
 - **Economic Events Table**: Displays Date, Time, Country (with flags), Event, Impact, Actual, Forecast, Previous. Events are translated from English to Spanish. Includes timezone-aware time display and visual impact indicators.
 - **Timezone Management**: Automatic detection and manual selection via a dedicated selector, supporting common timezones.
 - **Automatic Daily Updates**: The system automatically detects day changes and updates data hourly to ensure current information.
@@ -52,5 +52,5 @@ The application is built with a modern web technology stack, ensuring a responsi
 
 ## External Dependencies
 
-- **Finnworlds Economic Calendar API**: Provides real-time economic calendar data for 196 countries. This is the primary data source for all economic events.
+- **Finnworlds Economic Calendar API**: Provides real-time economic calendar data. The application is configured to track 8 major economies (USA, Eurozone, Germany, France, Spain, UK, China, Japan) to optimize API rate limits and performance.
 - **PostgreSQL**: Used as the database for the Watchlist/Favorites feature, storing user-specific country and event watchlists.
