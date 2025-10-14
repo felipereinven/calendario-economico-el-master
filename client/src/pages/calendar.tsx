@@ -1,10 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type EconomicEvent, type FilterOptions, countries } from "@shared/schema";
 import { FilterControls } from "@/components/calendar/filter-controls";
 import { EventsTable } from "@/components/calendar/events-table";
 import { TimezoneSelector } from "@/components/calendar/timezone-selector";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, RefreshCw } from "lucide-react";
+import { format } from "date-fns";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -14,6 +17,9 @@ export default function CalendarPage() {
     search: "",
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
+  
+  const [refreshInterval, setRefreshInterval] = useState<number>(0); // 0 = disabled
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Build query string from filters
   const queryParams = new URLSearchParams();
@@ -36,9 +42,17 @@ export default function CalendarPage() {
   const queryString = queryParams.toString();
   const apiUrl = `/api/events${queryString ? `?${queryString}` : ""}`;
 
-  const { data: events, isLoading, error } = useQuery<EconomicEvent[]>({
+  const { data: events, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<EconomicEvent[]>({
     queryKey: [apiUrl],
+    refetchInterval: refreshInterval > 0 ? refreshInterval : false,
   });
+  
+  // Update last updated timestamp when data is fetched (including refetches)
+  useEffect(() => {
+    if (dataUpdatedAt && !isLoading) {
+      setLastUpdated(new Date(dataUpdatedAt));
+    }
+  }, [dataUpdatedAt, isLoading]);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -49,17 +63,58 @@ export default function CalendarPage() {
       {/* Header */}
       <header className="sticky top-0 z-[100] border-b bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-semibold text-foreground">
-            Global Economic Calendar
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Real-time economic events and market indicators across 196 countries
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl font-semibold text-foreground">
+                Global Economic Calendar
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Real-time economic events and market indicators across 196 countries
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {/* Last Updated */}
+              {lastUpdated && (
+                <div className="text-xs text-muted-foreground mr-2" data-testid="text-last-updated">
+                  Updated: {format(lastUpdated, "HH:mm:ss")}
+                </div>
+              )}
+              
+              {/* Manual Refresh Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                data-testid="button-refresh"
+              >
+                <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              
+              {/* Auto-refresh Interval Selector */}
+              <Select
+                value={refreshInterval.toString()}
+                onValueChange={(value) => setRefreshInterval(Number(value))}
+              >
+                <SelectTrigger className="w-[140px]" data-testid="select-refresh-interval">
+                  <SelectValue placeholder="Auto-refresh" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Off</SelectItem>
+                  <SelectItem value="30000">30 seconds</SelectItem>
+                  <SelectItem value="60000">1 minute</SelectItem>
+                  <SelectItem value="300000">5 minutes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </header>
 
       {/* Filter Controls */}
-      <div className="sticky top-[89px] z-[99] border-b bg-background/95 backdrop-blur-sm">
+      <div className="sticky top-[105px] z-[99] border-b bg-background/95 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <FilterControls filters={filters} onFilterChange={handleFilterChange} />
         </div>
