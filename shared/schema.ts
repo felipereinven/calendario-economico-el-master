@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { pgTable, text, timestamp, serial } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
 
 // Economic Event Schema
 export const economicEventSchema = z.object({
@@ -41,3 +43,39 @@ export const countries = [
 ] as const;
 
 export type CountryOption = typeof countries[number];
+
+// Database Tables
+// Watchlist table for favorite countries
+export const watchlistCountries = pgTable("watchlist_countries", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull(), // User session identifier
+  countryCode: text("country_code").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Watchlist table for favorite events
+export const watchlistEvents = pgTable("watchlist_events", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull(), // User session identifier
+  eventId: text("event_id").notNull(),
+  eventName: text("event_name").notNull(),
+  country: text("country").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Zod schemas for insertions
+export const insertWatchlistCountrySchema = createInsertSchema(watchlistCountries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWatchlistEventSchema = createInsertSchema(watchlistEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types
+export type WatchlistCountry = typeof watchlistCountries.$inferSelect;
+export type InsertWatchlistCountry = z.infer<typeof insertWatchlistCountrySchema>;
+export type WatchlistEvent = typeof watchlistEvents.$inferSelect;
+export type InsertWatchlistEvent = z.infer<typeof insertWatchlistEventSchema>;

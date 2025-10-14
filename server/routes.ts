@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { startOfDay, endOfDay, startOfWeek, endOfWeek, addWeeks, startOfMonth, endOfMonth, parseISO, format } from "date-fns";
+import { storage } from "./storage";
+import { insertWatchlistCountrySchema, insertWatchlistEventSchema } from "@shared/schema";
 
 const FINNWORLDS_API_KEY = process.env.FINNWORLDS_API_KEY;
 const FINNWORLDS_BASE_URL = "https://api.finnworlds.com/api/v1";
@@ -143,6 +145,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in /api/events:", error);
       res.status(500).json({ error: "Failed to fetch economic events" });
+    }
+  });
+
+  // Watchlist Countries API
+  app.get("/api/watchlist/countries", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const countries = await storage.getWatchlistCountries(sessionId);
+      res.json(countries);
+    } catch (error) {
+      console.error("Error fetching watchlist countries:", error);
+      res.status(500).json({ error: "Failed to fetch watchlist countries" });
+    }
+  });
+
+  app.post("/api/watchlist/countries", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const validated = insertWatchlistCountrySchema.parse({ ...req.body, sessionId });
+      const country = await storage.addWatchlistCountry(validated);
+      res.json(country);
+    } catch (error) {
+      console.error("Error adding watchlist country:", error);
+      res.status(500).json({ error: "Failed to add watchlist country" });
+    }
+  });
+
+  app.delete("/api/watchlist/countries/:countryCode", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const { countryCode } = req.params;
+      await storage.removeWatchlistCountry(sessionId, countryCode);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing watchlist country:", error);
+      res.status(500).json({ error: "Failed to remove watchlist country" });
+    }
+  });
+
+  // Watchlist Events API
+  app.get("/api/watchlist/events", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const events = await storage.getWatchlistEvents(sessionId);
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching watchlist events:", error);
+      res.status(500).json({ error: "Failed to fetch watchlist events" });
+    }
+  });
+
+  app.post("/api/watchlist/events", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const validated = insertWatchlistEventSchema.parse({ ...req.body, sessionId });
+      const event = await storage.addWatchlistEvent(validated);
+      res.json(event);
+    } catch (error) {
+      console.error("Error adding watchlist event:", error);
+      res.status(500).json({ error: "Failed to add watchlist event" });
+    }
+  });
+
+  app.delete("/api/watchlist/events/:eventId", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const { eventId } = req.params;
+      await storage.removeWatchlistEvent(sessionId, eventId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing watchlist event:", error);
+      res.status(500).json({ error: "Failed to remove watchlist event" });
     }
   });
 

@@ -33,6 +33,29 @@ This application serves as an interactive Global Economic Calendar that displays
 
   **Known Limitations:**
   - Timezone handling: Event times from API are parsed as ISO strings without explicit timezone metadata. Both table display and CSV export apply the same timezone conversion logic for consistency, but accuracy depends on API's source timezone (assumed to be browser-local time). Future enhancement: confirm API timezone format and implement proper timezone conversion.
+  - Watchlist feature: Backend infrastructure complete (PostgreSQL database, API endpoints, session management) but frontend UI not implemented due to time constraints. Ready for frontend development.
+
+## Watchlist/Favorites Feature Status
+
+**Backend Complete (Production Ready):**
+- PostgreSQL tables: `watchlist_countries` and `watchlist_events`
+- Database storage layer with 6 CRUD methods in `server/storage.ts`
+- RESTful API endpoints:
+  - GET/POST/DELETE `/api/watchlist/countries`
+  - GET/POST/DELETE `/api/watchlist/events`
+- Session-based user identification via `x-session-id` header
+- Session ID generation utility in `client/src/lib/session.ts`
+- Database schema successfully migrated
+
+**Frontend Pending:**
+- Star/bookmark icons on events table
+- Watchlist management panel/dialog
+- "Watchlist Only" filter toggle
+- Integration with calendar page
+- E2E testing
+
+**Technical Debt:**
+- API validation errors return 500 instead of 400 (should be fixed)
 
 ## Project Architecture
 
