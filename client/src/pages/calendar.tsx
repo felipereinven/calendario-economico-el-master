@@ -1,14 +1,13 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { type EconomicEvent, type FilterOptions, countries } from "@shared/schema";
 import { FilterControls } from "@/components/calendar/filter-controls";
 import { EventsTable } from "@/components/calendar/events-table";
-import { TimezoneSelector } from "@/components/calendar/timezone-selector";
 import { NotificationSettings } from "@/components/calendar/notification-settings";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 export default function CalendarPage() {
@@ -72,27 +71,27 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-[100] border-b bg-card/95 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">
-                  El Master - Calendario Económico Global
+                <h1 className="text-base sm:text-xl font-bold text-foreground">
+                  El Master - Calendario Económico
                 </h1>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground hidden sm:block">
                   {events ? `${events.length} eventos` : "0 eventos"} • {countries.length} países • {filters.timezone?.split('/').pop() || 'UTC'}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              {/* Status Indicators */}
-              <div className="flex gap-1 mr-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+              {/* Status Indicators - Hidden on mobile */}
+              <div className="hidden md:flex gap-1 mr-2">
                 <div className="px-2 py-1 rounded-md bg-impact-high/20 text-impact-high text-xs font-semibold">
                   Alta: {events?.filter(e => e.impact === 'high').length || 0}
                 </div>
@@ -103,6 +102,27 @@ export default function CalendarPage() {
                   Baja: {events?.filter(e => e.impact === 'low').length || 0}
                 </div>
               </div>
+
+              {/* Timezone Selector - Simplified inline */}
+              <Select
+                value={filters.timezone || "UTC"}
+                onValueChange={(tz) => handleFilterChange({ timezone: tz })}
+              >
+                <SelectTrigger className="w-[110px] sm:w-[140px]" data-testid="select-timezone-header">
+                  <Clock className="w-3.5 h-3.5 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UTC">UTC</SelectItem>
+                  <SelectItem value="America/New_York">New York</SelectItem>
+                  <SelectItem value="America/Chicago">Chicago</SelectItem>
+                  <SelectItem value="America/Los_Angeles">Los Angeles</SelectItem>
+                  <SelectItem value="Europe/London">London</SelectItem>
+                  <SelectItem value="Europe/Paris">Paris</SelectItem>
+                  <SelectItem value="Asia/Tokyo">Tokyo</SelectItem>
+                  <SelectItem value="Asia/Shanghai">Shanghai</SelectItem>
+                </SelectContent>
+              </Select>
 
               {/* Notification Settings */}
               <NotificationSettings
@@ -121,9 +141,22 @@ export default function CalendarPage() {
                 onClick={() => refetch()}
                 disabled={isFetching}
                 data-testid="button-refresh"
+                className="hidden sm:flex"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
                 Actualizar
+              </Button>
+              
+              {/* Mobile refresh button - icon only */}
+              <Button
+                variant="default"
+                size="icon"
+                onClick={() => refetch()}
+                disabled={isFetching}
+                data-testid="button-refresh-mobile"
+                className="sm:hidden h-9 w-9"
+              >
+                <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
               </Button>
             </div>
           </div>
@@ -145,13 +178,14 @@ export default function CalendarPage() {
       )}
 
       {/* Filter Controls */}
-      <div className="sticky top-[89px] z-[99] border-b bg-muted/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-muted/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
+          <h2 className="text-sm sm:text-base font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
             </svg>
-            Centro de Control - Filtros Avanzados
+            <span className="hidden sm:inline">Centro de Control - Filtros Avanzados</span>
+            <span className="sm:hidden">Filtros</span>
           </h2>
           <FilterControls filters={filters} onFilterChange={handleFilterChange} />
         </div>
@@ -205,11 +239,6 @@ export default function CalendarPage() {
         )}
       </main>
 
-      {/* Timezone Selector FAB */}
-      <TimezoneSelector 
-        selectedTimezone={filters.timezone || "UTC"} 
-        onTimezoneChange={(tz) => handleFilterChange({ timezone: tz })} 
-      />
     </div>
   );
 }

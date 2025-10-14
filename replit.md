@@ -8,6 +8,19 @@ This application serves as an interactive Global Economic Calendar that displays
 
 ## Recent Changes
 
+- **October 14, 2025** (Update 2): ✅ Dark Mode + Mobile Responsiveness
+  - **Dark Mode**: Activado por defecto para toda la aplicación
+  - **Responsividad Móvil Completa**:
+    - Header responsive con tamaños adaptativos (flex-col en móvil, flex-row en desktop)
+    - Selector de zona horaria movido al header (eliminado el FAB flotante)
+    - Botones adaptados: texto completo en desktop, solo iconos en móvil
+    - Badges de impacto ocultos en móvil para ahorrar espacio
+    - Filtros con texto abreviado en móvil ("Filtros" vs "Centro de Control - Filtros Avanzados")
+    - Padding y márgenes optimizados para pantallas pequeñas (px-3 en móvil, px-4-6-8 en desktop)
+    - Sticky positioning ajustado para diferentes tamaños (top-[68px] móvil, top-[77px] desktop)
+  
+  - **API Status**: Finnworlds API retorna error "Error route" - investigando alternativas gratuitas
+
 - **October 14, 2025**: ✅ Full Spanish Translation & Redesign Complete
   - **Backend Changes**:
     - Removed ALL fallback/simulated data - application now shows clear errors when API fails (no mock data)

@@ -91,7 +91,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const response = await fetch(apiUrl.toString());
         
         if (response.status === 401 || response.status === 403) {
-          console.error(`Finnworlds API authentication error: ${response.status}`);
           return res.status(500).json({ 
             error: "API authentication failed",
             message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
@@ -99,7 +98,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         if (!response.ok) {
-          console.error(`Finnworlds API error: ${response.status} ${response.statusText}`);
           return res.status(500).json({ 
             error: "API request failed",
             message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
@@ -109,7 +107,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const data = await response.json();
         events = Array.isArray(data) ? data : (data.events || []);
       } catch (apiError) {
-        console.error("Error fetching from Finnworlds API:", apiError);
         return res.status(500).json({ 
           error: "API connection failed",
           message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
