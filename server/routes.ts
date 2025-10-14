@@ -71,8 +71,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build Finnworlds API URL
       const apiUrl = new URL(`${FINNWORLDS_BASE_URL}/economiccalendar`);
       apiUrl.searchParams.set("key", FINNWORLDS_API_KEY);
-      apiUrl.searchParams.set("from", fromDate);
-      apiUrl.searchParams.set("to", toDate);
+      apiUrl.searchParams.set("date_from", fromDate);
+      apiUrl.searchParams.set("date_to", toDate);
 
       // Add country filter if specified (API may support comma-separated values)
       if (countries && typeof countries === "string" && countries.trim()) {
@@ -89,27 +89,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         const response = await fetch(apiUrl.toString());
+        const responseText = await response.text();
         
         if (response.status === 401 || response.status === 403) {
           return res.status(500).json({ 
             error: "API authentication failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
+            debug: { status: response.status, url: apiUrl.toString(), response: responseText.substring(0, 200) }
           });
         }
         
         if (!response.ok) {
           return res.status(500).json({ 
             error: "API request failed",
-            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+            message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
+            debug: { status: response.status, url: apiUrl.toString(), response: responseText.substring(0, 200) }
           });
         }
         
-        const data = await response.json();
-        events = Array.isArray(data) ? data : (data.events || []);
+        const data = JSON.parse(responseText);
+        events = Array.isArray(data) ? data : (data.events || data.result || []);
+        
+        if (events.length === 0) {
+          return res.status(500).json({ 
+            error: "API returned no events",
+            message: "La API de Finnworlds no devolvió eventos. Posible error de parámetros o API key inválida.",
+            debug: { url: apiUrl.toString(), responsePreview: responseText.substring(0, 300), dataType: typeof data, isArray: Array.isArray(data), keys: Object.keys(data) }
+          });
+        }
       } catch (apiError) {
         return res.status(500).json({ 
           error: "API connection failed",
-          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados."
+          message: "Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.",
+          debug: { error: apiError instanceof Error ? apiError.message : String(apiError) }
         });
       }
 
