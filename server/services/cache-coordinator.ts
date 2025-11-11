@@ -43,17 +43,20 @@ export async function refreshMonthlyCache(): Promise<void> {
 }
 
 /**
- * Hourly job: Refresh events for today ±7 days
+ * Daily job: Refresh events for today ±7 days (14-day window)
+ * Runs at 14:00 UTC, 12 hours offset from monthly job at 02:00 UTC
  */
-export async function refreshRollingWindow(): Promise<void> {
+export async function refreshDailyWindow(): Promise<void> {
   if (isRefreshing) {
-    console.log("Hourly refresh skipped: another refresh is in progress");
+    console.log("Daily refresh skipped: another refresh is in progress - will retry in 30 minutes");
+    // Retry after 30 minutes if skipped due to concurrent refresh
+    setTimeout(refreshDailyWindow, 30 * 60 * 1000);
     return;
   }
 
   try {
     isRefreshing = true;
-    console.log("Starting rolling window refresh...");
+    console.log("Starting daily window refresh (14-day range)...");
 
     // Today ±7 days (14 days total)
     const range = getRefreshRange(14);
@@ -66,9 +69,9 @@ export async function refreshRollingWindow(): Promise<void> {
     await refreshEventsCache(from, to, COUNTRIES);
 
     lastRefreshTime = Date.now();
-    console.log("Rolling window refresh complete");
+    console.log("Daily window refresh complete");
   } catch (error) {
-    console.error("Hourly refresh failed:", error);
+    console.error("Daily refresh failed:", error);
   } finally {
     isRefreshing = false;
   }
@@ -101,28 +104,44 @@ export function initializeRefreshJobs(): void {
     console.log(`Monthly refresh scheduled for ${nextRun.toISOString()}`);
   };
 
-  // Run rolling window refresh every hour (but skip first run if doing initial refresh)
-  const runHourly = async () => {
-    // Check if we need initial data load first
+  // Run daily window refresh at 14:00 UTC (12 hours after monthly job)
+  const runDaily = async () => {
+    // Check if we should run immediately on startup
     const latestDate = await storage.getLatestCachedDate();
     
     if (latestDate) {
-      // Cache exists, run normal hourly refresh immediately
-      refreshRollingWindow();
+      // Cache exists, run immediate refresh on startup
+      console.log("Running immediate daily window refresh on startup...");
+      refreshDailyWindow();
     } else {
-      console.log("Skipping initial hourly refresh - waiting for initial data load");
+      console.log("Skipping initial daily refresh - waiting for bootstrap");
     }
     
-    // Schedule hourly refresh
-    setInterval(refreshRollingWindow, 60 * 60 * 1000); // Every hour
-    console.log("Hourly refresh initialized");
+    // Schedule next run at 14:00 UTC
+    const now = new Date();
+    const nextRun = new Date();
+    nextRun.setUTCHours(14, 0, 0, 0);
+    
+    if (nextRun <= now) {
+      nextRun.setDate(nextRun.getDate() + 1);
+    }
+
+    const delay = nextRun.getTime() - now.getTime();
+    
+    setTimeout(() => {
+      refreshDailyWindow();
+      // Schedule next run every 24 hours
+      setInterval(refreshDailyWindow, 24 * 60 * 60 * 1000);
+    }, delay);
+
+    console.log(`Daily window refresh scheduled for ${nextRun.toISOString()}`);
   };
 
   // Start jobs
   runNightly();
-  runHourly();
+  runDaily();
 
-  // Run initial refresh if no data exists (should run first before hourly)
+  // Run initial bootstrap if no data exists
   checkInitialData();
 }
 

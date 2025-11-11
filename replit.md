@@ -40,16 +40,18 @@ The application is built with a modern web technology stack, ensuring a responsi
 - **Filter Controls**: Multi-select country dropdown with flags, impact level toggles (High/Medium/Low), time period tabs (Today, This Week, Next Week, This Month), global search, and economic category filter (9 categories: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, PIB y Crecimiento, Comercio Exterior, Energía, Confianza). Intelligent categorization of events based on 100+ Spanish/English keywords with 86% coverage (32 of 37 events categorized on average).
 - **Economic Events Table**: Displays Date, Time, Country (with flags), Event, Impact, Actual, Forecast, Previous. Events are translated from English to Spanish. Includes timezone-aware time display and visual impact indicators.
 - **Timezone Management**: Automatic detection and manual selection via a dedicated selector, supporting common timezones.
-- **Automatic Daily Updates**: The system automatically detects day changes and updates data hourly to ensure current information.
+- **Automatic Daily Updates**: The system automatically updates data once per day (14:00 UTC) with a rolling 14-day window, plus a full monthly refresh at 2 AM UTC to ensure current information.
 - **Rate Limiting Solution**: Server-side caching with a 5-minute TTL, sequential API requests (1 request every 3 seconds), and global fetch lock to handle Finnworlds API rate limits. Cache keys are normalized, empty responses are cached, and concurrent requests to the same data share a single fetch operation to prevent rate limit violations.
 - **Watchlist/Favorites**: Backend infrastructure is complete with PostgreSQL tables (`watchlist_countries`, `watchlist_events`), RESTful API endpoints for CRUD operations, and session-based user identification. Frontend implementation is pending.
 
 ### System Design Choices
 - **Database Caching Architecture**: Complete PostgreSQL caching layer with `cached_events` table. Deterministic SHA-256 event IDs prevent duplicates. All requests served from database (<1s response) with background refresh jobs maintaining data freshness. Events are deduplicated by ID before saving to prevent ON CONFLICT errors.
-- **Dual Refresh Strategy**: 
+- **Daily Refresh Strategy**: 
   - **Initial bootstrap**: On cold start, loads current month start + 67 days (~2 months) for complete coverage
-  - **Nightly job**: 2AM UTC, refreshes current month start + 90 days forward (3 months)
-  - **Hourly job**: Rolling 14-day window (today ±7 days) for recent data updates
+  - **Nightly job (2 AM UTC)**: Refreshes current month start + 90 days forward (3 months), runs daily, includes 180-day cleanup
+  - **Daily window job (14:00 UTC)**: Rolling 14-day window (today ±7 days), runs once per day 12 hours after nightly job
+  - **Startup refresh**: On server restart, runs immediate 14-day refresh if cache exists to prevent staleness
+  - **Retry logic**: If job skipped due to concurrent refresh, retries after 30 minutes
   - **Incremental saves**: Events are saved day-by-day during refresh for immediate availability
   - **Concurrency prevention**: Global refresh lock + per-fetch lock prevent duplicate API calls
 - **Smart Hybrid Fallback**: On cold start, detects empty cache and performs one-time bootstrap fetch. Returns 503 with clear Spanish error messages if API key missing. Subsequent requests are cache-first.
