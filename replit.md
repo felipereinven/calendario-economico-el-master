@@ -33,12 +33,18 @@ The application is built with a modern web technology stack, ensuring a responsi
 - **Color Scheme**: Professional blue (hsl(215 85% 55%)) with specific impact colors (red for High, amber for Medium, green for Low).
 - **Typography**: Inter font for UI text, JetBrains Mono for numeric data.
 - **Design Elements**: Consistent spacing, typography hierarchy, and a dark mode activated by default.
-- **Responsiveness**: Full mobile responsiveness across all components, adapting layouts and element visibility (e.g., hiding impact badges on mobile, abbreviated filter text).
+- **Mobile-First Responsive Design** (breakpoint: 768px):
+  - **Mobile (<768px)**: Vertical card layout with EventCard component featuring hour in left column, compact event details, and stacked Chevron Up impact indicators. Filters accessible via Sheet/Drawer from bottom with "Filtros Avanzados" button. Adaptive pagination (15 items per page). Title clamped to 2 lines to prevent overflow.
+  - **Desktop (≥768px)**: Traditional table layout with all columns visible. Filters always visible inline. Standard pagination (20 items per page).
+  - **Responsive Elements**: Conditional rendering using `useIsMobile()` hook, mobile-optimized spacing and typography, horizontal scroll for quick filters on mobile.
 - **Localization**: Complete Spanish translation for all UI elements, labels, and messages. No English text is present. SVG icons are used instead of emojis.
 
 ### Feature Specifications
-- **Filter Controls**: Multi-select country dropdown with flags, impact level toggles (High/Medium/Low), time period tabs (Today, This Week, Next Week, This Month), global search, and economic category filter (9 categories: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, PIB y Crecimiento, Comercio Exterior, Energía, Confianza). Intelligent categorization of events based on 100+ Spanish/English keywords with 86% coverage (32 of 37 events categorized on average).
-- **Economic Events Table**: Displays Date, Time, Country (with flags), Event, Impact, Actual, Forecast, Previous. Events are translated from English to Spanish. Includes timezone-aware time display and visual impact indicators.
+- **Filter Controls**: Multi-select country dropdown with flags, impact level toggles (High/Medium/Low), time period tabs (Today, This Week, Next Week, This Month), global search, and economic category filter (9 categories: Empleo, Inflación, Política Monetaria, Manufactura, Servicios, PIB y Crecimiento, Comercio Exterior, Energía, Confianza). Intelligent categorization of events based on 100+ Spanish/English keywords with 86% coverage (32 of 37 events categorized on average). On mobile, advanced filters accessible via Sheet/Drawer component with active filter badge count.
+- **Economic Events Display**:
+  - **Desktop**: Traditional table layout with columns: Date, Time, Country (with flags), Event, Impact, Actual, Forecast, Previous. Full data visibility in spreadsheet format.
+  - **Mobile**: Vertical card layout (`EventCard` component) with time in left column, country/event/impact in compact rows, and Real/Pron/Ant data inline. Title clamped to 2 lines. Optimized for touch and readability on small screens.
+  - **Common**: Events translated from English to Spanish, timezone-aware time display, visual impact indicators, adaptive pagination (15 mobile / 20 desktop).
 - **Timezone Management**: Automatic detection and manual selection via a dedicated selector, supporting common timezones.
 - **Automatic Daily Updates**: The system automatically updates data once per day (14:00 UTC) with a rolling 14-day window, plus a full monthly refresh at 2 AM UTC to ensure current information.
 - **Rate Limiting Solution**: Server-side caching with a 5-minute TTL, sequential API requests (1 request every 3 seconds), and global fetch lock to handle Finnworlds API rate limits. Cache keys are normalized, empty responses are cached, and concurrent requests to the same data share a single fetch operation to prevent rate limit violations.
