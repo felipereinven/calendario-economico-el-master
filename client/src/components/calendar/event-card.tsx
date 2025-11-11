@@ -1,6 +1,7 @@
 import { type EconomicEvent, countries } from "@shared/schema";
 import { parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { formatNumber } from "@/lib/format-numbers";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 
@@ -42,10 +43,6 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
     }
   };
 
-  const formatValue = (value: string | null) => {
-    if (!value || value === "N/A" || value === "") return "—";
-    return value;
-  };
 
   const impactIcons = {
     high: [ChevronUp, ChevronUp, ChevronUp],
@@ -89,21 +86,21 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Real:</span>
             <span className={`font-semibold ${event.actual ? 'text-foreground' : 'text-muted-foreground'}`} data-testid={`text-actual-${index}`}>
-              {formatValue(event.actual)}
+              {formatNumber(event.actual)}
             </span>
           </div>
           <span className="text-border">|</span>
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Pron:</span>
             <span className="text-muted-foreground" data-testid={`text-forecast-${index}`}>
-              {formatValue(event.forecast)}
+              {formatNumber(event.forecast)}
             </span>
           </div>
           <span className="text-border">|</span>
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Ant:</span>
             <span className="text-muted-foreground" data-testid={`text-previous-${index}`}>
-              {formatValue(event.previous)}
+              {formatNumber(event.previous)}
             </span>
           </div>
         </div>
