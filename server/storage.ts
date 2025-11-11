@@ -1,6 +1,16 @@
-import { watchlistCountries, watchlistEvents, type WatchlistCountry, type WatchlistEvent, type InsertWatchlistCountry, type InsertWatchlistEvent } from "@shared/schema";
+import { 
+  watchlistCountries, 
+  watchlistEvents, 
+  cachedEvents,
+  type WatchlistCountry, 
+  type WatchlistEvent, 
+  type InsertWatchlistCountry, 
+  type InsertWatchlistEvent,
+  type CachedEvent,
+  type InsertCachedEvent
+} from "@shared/schema";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
 
 // Storage interface for the application
 export interface IStorage {
@@ -13,6 +23,19 @@ export interface IStorage {
   getWatchlistEvents(sessionId: string): Promise<WatchlistEvent[]>;
   addWatchlistEvent(event: InsertWatchlistEvent): Promise<WatchlistEvent>;
   removeWatchlistEvent(sessionId: string, eventId: string): Promise<void>;
+
+  // Cached Events
+  getCachedEvents(params: {
+    startUtc?: Date;
+    endUtc?: Date;
+    fromDate?: string;
+    toDate?: string;
+    countries?: string[];
+    impacts?: string[];
+  }): Promise<CachedEvent[]>;
+  saveCachedEvents(events: InsertCachedEvent[]): Promise<void>;
+  getLatestCachedDate(): Promise<string | null>;
+  deleteOldCachedEvents(daysToKeep: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -62,6 +85,86 @@ export class DatabaseStorage implements IStorage {
           eq(watchlistEvents.eventId, eventId)
         )
       );
+  }
+
+  // Cached Events
+  async getCachedEvents(params: {
+    startUtc?: Date;
+    endUtc?: Date;
+    fromDate?: string;
+    toDate?: string;
+    countries?: string[];
+    impacts?: string[];
+  }): Promise<CachedEvent[]> {
+    const conditions = [];
+
+    // Use UTC timestamps if provided (preferred for timezone accuracy)
+    if (params.startUtc && params.endUtc) {
+      conditions.push(gte(cachedEvents.eventTimestamp, params.startUtc));
+      conditions.push(lte(cachedEvents.eventTimestamp, params.endUtc));
+    } 
+    // Fallback to date strings for backward compatibility
+    else if (params.fromDate && params.toDate) {
+      conditions.push(gte(cachedEvents.date, params.fromDate));
+      conditions.push(lte(cachedEvents.date, params.toDate));
+    }
+
+    if (params.countries && params.countries.length > 0) {
+      conditions.push(inArray(cachedEvents.country, params.countries));
+    }
+
+    if (params.impacts && params.impacts.length > 0) {
+      conditions.push(inArray(cachedEvents.impact, params.impacts));
+    }
+
+    return db
+      .select()
+      .from(cachedEvents)
+      .where(and(...conditions))
+      .orderBy(cachedEvents.eventTimestamp);
+  }
+
+  async saveCachedEvents(events: InsertCachedEvent[]): Promise<void> {
+    if (events.length === 0) return;
+
+    // Bulk insert with ON CONFLICT DO UPDATE for performance
+    // Process in batches of 100 to avoid overwhelming the database
+    const batchSize = 100;
+    
+    for (let i = 0; i < events.length; i += batchSize) {
+      const batch = events.slice(i, i + batchSize);
+      
+      await db
+        .insert(cachedEvents)
+        .values(batch)
+        .onConflictDoUpdate({
+          target: cachedEvents.id,
+          set: {
+            actual: sql`EXCLUDED.actual`,
+            forecast: sql`EXCLUDED.forecast`,
+            previous: sql`EXCLUDED.previous`,
+            fetchedAt: sql`NOW()`,
+          },
+        });
+    }
+  }
+
+  async getLatestCachedDate(): Promise<string | null> {
+    const result = await db
+      .select({ maxDate: sql<string>`MAX(${cachedEvents.date})` })
+      .from(cachedEvents);
+    
+    return result[0]?.maxDate || null;
+  }
+
+  async deleteOldCachedEvents(daysToKeep: number = 90): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+    const cutoffString = cutoffDate.toISOString().split('T')[0];
+
+    await db
+      .delete(cachedEvents)
+      .where(sql`${cachedEvents.date} < ${cutoffString}`);
   }
 }
 

@@ -1,0 +1,184 @@
+Api
+
+Te voy a explicar todo sobre la integración con la API de Finnworlds que estamos usando en el proyecto. Es una API muy completa para datos macroeconómicos.
+
+📋 Información General de la API
+URL Base
+https://api.finnworlds.com/api/v1
+Autenticación
+API Key: 6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de
+
+🔗 Endpoints Principales
+1. Calendario Macroeconómico
+GET /macrocalendar
+
+Parámetros:
+
+key (required): Tu API key
+country (optional): Nombre del país en inglés
+date (optional): Fecha en formato YYYY-MM-DD
+iso_country_code (optional): Código ISO del país (us, gb, de, etc.)
+Ejemplo CURL:
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrocalendar?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&country=United_States&date=2025-11-11&iso_country_code=us' \
+  -H 'accept: application/json'
+
+  2. Lista de Países
+  GET /macrolist
+  Parámetros:
+
+key (required): Tu API key
+list (required): Tipo de lista, usa "country"
+Ejemplo CURL:
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrolist?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&list=country' \
+  -H 'accept: application/json'
+
+📊 Schemas de Respuesta
+Schema del Calendario Económico
+Read index.ts, lines 1 to 40
+
+Ejemplo de Respuesta del Calendario:
+{
+  "status": {
+    "code": 200,
+    "message": "OK",
+    "details": ""
+  },
+  "result": {
+    "output": [
+      {
+        "datetime": "2025-11-11 11:00:00",
+        "iso_country_code": "US",
+        "country": "United States",
+        "report_name": "NFIB Business Optimism Index",
+        "report_date": "10",
+        "actual": "98.2",
+        "previous": "98.8",
+        "consensus": "98.3",
+        "unit": "points",
+        "impact": "3"
+      }
+    ]
+  }
+}
+
+Ejemplo de Respuesta de Países:
+{
+  "status": {
+    "code": 200,
+    "message": "OK",
+    "details": ""
+  },
+  "result": {
+    "pagination": {
+      "total_data": "143",
+      "total_pages": 1,
+      "current_page": 1
+    },
+    "output": [
+      {
+        "country": "Afghanistan"
+      },
+      {
+        "country": "Albania"
+      }
+    ]
+  }
+}  🛠 Implementación en el Proyecto
+Configuración Axios
+Read api.ts, lines 1 to 15
+Función Principal de Calendario
+Read api.ts, lines 50 to 80
+📝 Campos de Datos Explicados
+CalendarEvent Fields:
+ 
+Campo	Tipo	Descripción	Ejemplo
+datetime	string	Fecha y hora del evento	"2025-11-11 11:00:00"
+iso_country_code	string	Código ISO del país	"US", "GB", "DE"
+country	string	Nombre completo del país	"United States"
+report_name	string	Nombre del indicador económico	"NFIB Business Optimism Index"
+report_date	string	Período del reporte	"10" (octubre)
+actual	string	Valor real publicado	"98.2"
+previous	string	Valor anterior	"98.8"
+consensus	string	Pronóstico/consenso	"98.3"
+unit	string	Unidad de medida	"points", "percent", etc.
+impact	string	Nivel de impacto	"1" (bajo), "2" (medio), "3" (alto)
+ Niveles de Impacto:
+* "1" = Impacto Bajo (🟢)
+* "2" = Impacto Medio (🟡)
+* "3" = Impacto Alto (🔴)
+🔄 Mapeo de Datos en el Proyecto
+Transformación de CalendarEvent a EconomicEvent:
+Read api.ts, lines 120 to 140
+🧪 Ejemplos de Uso con CURL
+1. Obtener Eventos de Estados Unidos Hoy:
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrocalendar?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&country=United_States&date=2025-11-11&iso_country_code=us' \
+  -H 'accept: application/json'
+2. Obtener Eventos del Reino Unido:
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrocalendar?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&country=United_Kingdom&date=2025-11-11&iso_country_code=gb' \
+  -H 'accept: application/json'
+3. Obtener Lista Completa de Países:
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrolist?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&list=country' \
+  -H 'accept: application/json'
+4. Sin Parámetros de País (Todos los Eventos):
+curl -X 'GET' \
+  'https://api.finnworlds.com/api/v1/macrocalendar?key=6b3bb15c9fd258eaa3846948ae3e5ddb9dccf2de&date=2025-11-11' \
+  -H 'accept: application/json'  
+🚨 Manejo de Errores
+Códigos de Estado Comunes:
+* 200: Éxito
+* 400: Parámetros incorrectos
+* 401: API key inválida
+* 404: Endpoint no encontrado
+* 429: Límite de tasa excedido
+* 500: Error interno del servidor
+Ejemplo de Respuesta de Error:
+{
+  "status": {
+    "code": 401,
+    "message": "Unauthorized",
+    "details": "Invalid API key"
+  }
+}
+ ⚡ Optimizaciones en el Proyecto
+1. Cache de Países:
+// Solo cargamos los países configurados, no toda la lista de la API
+export async function getCountries() {
+  return countryOptions; // Lista predefinida de 8 países
+}
+ 2. Manejo de Fechas:
+// Generamos rangos de fechas automáticamente
+const getTimeFilterRange = (filterId: string) => {
+  // Calcula automáticamente startDate y endDate
+}
+3. Fallback de Datos:
+// Si la API falla, usamos datos mock
+if (events.length === 0) {
+  return mockEconomicEvents.filter(/* filtros */);
+}
+  🔧 Limitaciones y Consideraciones
+Límites de la API:
+* ✅ No hay límites estrictos documentados
+* ✅ API key gratuita funcional
+* ✅ Respuesta rápida (< 1 segundo)
+Países Soportados:
+* ✅ 143+ países disponibles
+* ✅ Datos históricos y futuros
+* ✅ Múltiples indicadores por país
+Calidad de Datos:
+* ✅ Datos actualizados regularmente
+* ✅ Incluye valores actual, previo y consenso
+* ✅ Niveles de impacto categorizados
+📚 Documentación Adicional
+La API de Finnworlds es muy estable y completa. En el proyecto hemos implementado:
+1. Tipado completo con TypeScript
+2. Manejo de errores robusto
+3. Cache inteligente de países
+4. Transformación de datos automática
+5. Fallback con datos mock
+6. Mapeo de códigos de países flexible
+ 

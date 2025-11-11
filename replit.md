@@ -45,12 +45,21 @@ The application is built with a modern web technology stack, ensuring a responsi
 - **Watchlist/Favorites**: Backend infrastructure is complete with PostgreSQL tables (`watchlist_countries`, `watchlist_events`), RESTful API endpoints for CRUD operations, and session-based user identification. Frontend implementation is pending.
 
 ### System Design Choices
-- **Backend Proxy**: An Express.js proxy (`/api/events`) handles requests to the Finnworlds API, forwarding query parameters and managing API key security.
-- **Data Handling**: Finnworlds API responses are processed, including mapping impact levels and handling 404 responses gracefully.
-- **Error Handling**: Comprehensive error handling is implemented, providing clear Spanish messages for API failures (e.g., 500 errors for unavailable API, 401/403 for authentication). No fallback/mock data is used.
-- **Performance Optimization**: Queries for date ranges are optimized, with a maximum of 14 days per API call and parallelized requests for country-date combinations, limited by the API's constraints.
+- **Database Caching Architecture**: Complete PostgreSQL caching layer with `cached_events` table. Deterministic SHA-256 event IDs prevent duplicates. All requests served from database (<1s response) with background refresh jobs maintaining data freshness.
+- **Dual Refresh Strategy**: 
+  - **Nightly job**: 2AM UTC, refreshes 30-day window for all 8 countries
+  - **Hourly job**: Rolling 14-day window (today ±7 days) for recent data
+  - **Concurrency prevention**: Global fetch lock prevents duplicate API calls
+- **Smart Hybrid Fallback**: On cold start, detects empty cache and performs one-time bootstrap fetch. Returns 503 with clear Spanish error messages if API key missing. Subsequent requests are cache-first.
+- **UTC Timestamp Filtering**: Queries use UTC timestamps for timezone-aware filtering, ensuring accurate results across all timezones. Fixed critical timezone bug from previous date-string approach.
+- **Bilingual Field Storage**: Events stored with both `eventOriginal` (English for categorization logic) and `event` (Spanish for UI display).
+- **Finnworlds API Integration**: Correct endpoint (`/api/v1/macrocalendar`) with ISO-2 country codes (`us`, `gb`, `de`, etc.). Impact mapping: "3"=high, "2"=medium, "1"=low.
+- **Bulk Database Operations**: Batches of 100 events with `ON CONFLICT DO UPDATE` for efficient upserts. Composite indexes on (event_date, country, impact) for fast filtering.
+- **Shared Utilities**: Extracted event taxonomy (200+ translations, categorization) and date-range logic to eliminate code duplication.
+- **Error Handling**: Comprehensive validation and graceful degradation. Spanish user messages with English technical details for debugging.
+- **90-Day Retention**: Automated cleanup job maintains reasonable database size.
 
 ## External Dependencies
 
-- **Finnworlds Economic Calendar API**: Provides real-time economic calendar data. The application is configured to track 8 major economies (USA, Eurozone, Germany, France, Spain, UK, China, Japan) to optimize API rate limits and performance.
-- **PostgreSQL**: Used as the database for the Watchlist/Favorites feature, storing user-specific country and event watchlists.
+- **Finnworlds Economic Calendar API**: Provides real-time economic calendar data via `/api/v1/macrocalendar` endpoint. Uses ISO-2 country codes for requests. The application is configured to track 8 major economies (USA, EUR, DEU, FRA, ESP, GBR, CHN, JPN) with automatic fallback for empty responses.
+- **PostgreSQL**: Primary database for both application data and caching layer. Stores cached economic events with deterministic IDs, watchlist countries/events, and provides optimized query performance with composite indexes.
