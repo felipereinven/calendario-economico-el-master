@@ -8,8 +8,17 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, TrendingUp } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Search, ChevronDown, TrendingUp, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FilterControlsProps {
   filters: FilterOptions;
@@ -30,6 +39,8 @@ const timePeriods = [
 ];
 
 export function FilterControls({ filters, onFilterChange }: FilterControlsProps) {
+  const isMobile = useIsMobile();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [searchValue, setSearchValue] = useState(filters.search || "");
 
   const toggleCountry = (countryCode: string) => {
@@ -61,7 +72,8 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
     onFilterChange({ search: value });
   };
 
-  return (
+  // Reusable filter content
+  const FilterContent = () => (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Country Filter */}
@@ -270,4 +282,71 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       )}
     </div>
   );
+
+  // Mobile: Sheet with trigger button
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {/* Time Period Quick Filters - Always visible on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+          {timePeriods.map((period) => (
+            <Button
+              key={period.value}
+              variant={filters.dateRange === period.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => onFilterChange({ dateRange: period.value })}
+              data-testid={`button-period-${period.value}`}
+              className="shrink-0"
+            >
+              {period.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Advanced Filters Sheet Trigger */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full justify-between" data-testid="button-open-filters">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Filtros Avanzados</span>
+              </div>
+              {((filters.countries && filters.countries.length > 0) ||
+                (filters.impacts && filters.impacts.length > 0) ||
+                (filters.categories && filters.categories.length > 0) ||
+                filters.search) && (
+                <Badge variant="secondary" className="ml-2">
+                  {(filters.countries?.length || 0) +
+                    (filters.impacts?.length || 0) +
+                    (filters.categories?.length || 0) +
+                    (filters.search ? 1 : 0)}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle>Filtros Avanzados</SheetTitle>
+              <SheetDescription>
+                Personaliza la visualización de eventos económicos
+              </SheetDescription>
+            </SheetHeader>
+            <FilterContent />
+            <div className="mt-6 pt-4 border-t">
+              <Button
+                onClick={() => setIsSheetOpen(false)}
+                className="w-full"
+                data-testid="button-close-filters"
+              >
+                Aplicar Filtros
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  }
+
+  // Desktop: Full filters always visible
+  return <FilterContent />;
 }

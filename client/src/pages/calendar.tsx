@@ -214,14 +214,7 @@ export default function CalendarPage() {
 
       {/* Filter Controls */}
       <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-muted/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
-          <h2 className="text-sm sm:text-base font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-            </svg>
-            <span className="hidden sm:inline">Centro de Control - Filtros Avanzados</span>
-            <span className="sm:hidden">Filtros</span>
-          </h2>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <FilterControls filters={filters} onFilterChange={handleFilterChange} />
         </div>
       </div>

@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { EventCard } from "./event-card";
 
 interface EventsTableProps {
   events: EconomicEvent[];
@@ -25,8 +27,16 @@ const impactDots = {
 };
 
 export function EventsTable({ events, timezone }: EventsTableProps) {
+  const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
+  // Smaller page size for mobile for better UX
   const [pageSize, setPageSize] = useState(20);
+
+  // Sync page size with mobile/desktop breakpoint
+  useEffect(() => {
+    setPageSize(isMobile ? 15 : 20);
+    setCurrentPage(1); // Reset to page 1 when breakpoint changes
+  }, [isMobile]);
 
   // Resetear a página 1 cuando cambian los eventos (por filtros)
   useEffect(() => {
@@ -92,9 +102,24 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
   };
 
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0">
-      <div className="inline-block min-w-full align-middle">
-        <table className="min-w-full divide-y divide-border" data-testid="table-events">
+    <div>
+      {/* Mobile View - Cards */}
+      {isMobile ? (
+        <div className="divide-y divide-border border-y border-border -mx-4" data-testid="list-events-mobile">
+          {paginatedEvents.map((event, index) => (
+            <EventCard 
+              key={event.id}
+              event={event}
+              timezone={timezone}
+              index={index}
+            />
+          ))}
+        </div>
+      ) : (
+        /* Desktop View - Table */
+        <div className="overflow-x-auto">
+          <div className="inline-block min-w-full align-middle">
+            <table className="min-w-full divide-y divide-border" data-testid="table-events">
           <thead className="bg-muted/50">
             <tr>
               <th
@@ -195,6 +220,8 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
           </tbody>
         </table>
       </div>
+        </div>
+      )}
 
       {/* Controles de paginación */}
       {events.length > 0 && (
