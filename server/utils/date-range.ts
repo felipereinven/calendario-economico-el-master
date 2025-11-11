@@ -60,15 +60,21 @@ export function calculateDateRange(
       localLabel = `Hoy`;
   }
 
-  // Convert back to UTC
+  // Convert back to UTC for timestamp filtering
   const startUtc = fromZonedTime(startLocal, timezone);
   const endUtc = fromZonedTime(endLocal, timezone);
+
+  // IMPORTANT: Use date strings from local time to avoid timezone issues
+  // This ensures "today" in NY shows only events with date="2025-11-11",
+  // not events from "2025-11-12" that happen to fall within the UTC range
+  const startDate = format(startLocal, "yyyy-MM-dd");
+  const endDate = format(endLocal, "yyyy-MM-dd");
 
   return {
     startUtc,
     endUtc,
-    startDate: format(startUtc, "yyyy-MM-dd"),
-    endDate: format(endUtc, "yyyy-MM-dd"),
+    startDate,
+    endDate,
     localLabel,
   };
 }

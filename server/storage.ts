@@ -98,15 +98,15 @@ export class DatabaseStorage implements IStorage {
   }): Promise<CachedEvent[]> {
     const conditions = [];
 
-    // Use UTC timestamps if provided (preferred for timezone accuracy)
-    if (params.startUtc && params.endUtc) {
-      conditions.push(gte(cachedEvents.eventTimestamp, params.startUtc));
-      conditions.push(lte(cachedEvents.eventTimestamp, params.endUtc));
-    } 
-    // Fallback to date strings for backward compatibility
-    else if (params.fromDate && params.toDate) {
+    // Always use date strings for filtering (timezone-safe)
+    if (params.fromDate && params.toDate) {
       conditions.push(gte(cachedEvents.date, params.fromDate));
       conditions.push(lte(cachedEvents.date, params.toDate));
+    }
+    // Fallback to UTC timestamps if only those are provided
+    else if (params.startUtc && params.endUtc) {
+      conditions.push(gte(cachedEvents.eventTimestamp, params.startUtc));
+      conditions.push(lte(cachedEvents.eventTimestamp, params.endUtc));
     }
 
     if (params.countries && params.countries.length > 0) {
@@ -127,12 +127,20 @@ export class DatabaseStorage implements IStorage {
   async saveCachedEvents(events: InsertCachedEvent[]): Promise<void> {
     if (events.length === 0) return;
 
+    // Deduplicate events by ID to prevent "ON CONFLICT affecting row twice" error
+    const uniqueEvents = events.reduce((acc, event) => {
+      acc.set(event.id, event);
+      return acc;
+    }, new Map<string, InsertCachedEvent>());
+    
+    const deduplicatedEvents = Array.from(uniqueEvents.values());
+
     // Bulk insert with ON CONFLICT DO UPDATE for performance
     // Process in batches of 100 to avoid overwhelming the database
     const batchSize = 100;
     
-    for (let i = 0; i < events.length; i += batchSize) {
-      const batch = events.slice(i, i + batchSize);
+    for (let i = 0; i < deduplicatedEvents.length; i += batchSize) {
+      const batch = deduplicatedEvents.slice(i, i + batchSize);
       
       await db
         .insert(cachedEvents)

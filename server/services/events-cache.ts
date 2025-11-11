@@ -244,26 +244,29 @@ export async function refreshEventsCache(
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Fetch all combinations of date + country (using ISO-3 codes)
-  const allEvents: InsertCachedEvent[] = [];
+  // Fetch and save events day by day for better incremental updates
+  let totalFetched = 0;
   
   for (const date of dates) {
+    const dayEvents: InsertCachedEvent[] = [];
+    
     for (const countryIso3 of countries) {
       const events = await fetchEventsFromAPI(date, countryIso3);
-      allEvents.push(...events);
+      dayEvents.push(...events);
+    }
+    
+    // Save events for this day immediately
+    if (dayEvents.length > 0) {
+      await storage.saveCachedEvents(dayEvents);
+      totalFetched += dayEvents.length;
     }
   }
 
-  // Save to database
-  if (allEvents.length > 0) {
-    await storage.saveCachedEvents(allEvents);
-  }
-
-  console.log(`Refresh complete: fetched ${allEvents.length} events`);
+  console.log(`Refresh complete: fetched ${totalFetched} events`);
   
   return {
-    fetched: allEvents.length,
-    cached: allEvents.length,
+    fetched: totalFetched,
+    cached: totalFetched,
   };
 }
 

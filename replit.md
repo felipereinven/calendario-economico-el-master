@@ -45,19 +45,21 @@ The application is built with a modern web technology stack, ensuring a responsi
 - **Watchlist/Favorites**: Backend infrastructure is complete with PostgreSQL tables (`watchlist_countries`, `watchlist_events`), RESTful API endpoints for CRUD operations, and session-based user identification. Frontend implementation is pending.
 
 ### System Design Choices
-- **Database Caching Architecture**: Complete PostgreSQL caching layer with `cached_events` table. Deterministic SHA-256 event IDs prevent duplicates. All requests served from database (<1s response) with background refresh jobs maintaining data freshness.
+- **Database Caching Architecture**: Complete PostgreSQL caching layer with `cached_events` table. Deterministic SHA-256 event IDs prevent duplicates. All requests served from database (<1s response) with background refresh jobs maintaining data freshness. Events are deduplicated by ID before saving to prevent ON CONFLICT errors.
 - **Dual Refresh Strategy**: 
-  - **Nightly job**: 2AM UTC, refreshes 30-day window for all 8 countries
-  - **Hourly job**: Rolling 14-day window (today ±7 days) for recent data
-  - **Concurrency prevention**: Global fetch lock prevents duplicate API calls
+  - **Initial bootstrap**: On cold start, loads current month start + 67 days (~2 months) for complete coverage
+  - **Nightly job**: 2AM UTC, refreshes current month start + 90 days forward (3 months)
+  - **Hourly job**: Rolling 14-day window (today ±7 days) for recent data updates
+  - **Incremental saves**: Events are saved day-by-day during refresh for immediate availability
+  - **Concurrency prevention**: Global refresh lock + per-fetch lock prevent duplicate API calls
 - **Smart Hybrid Fallback**: On cold start, detects empty cache and performs one-time bootstrap fetch. Returns 503 with clear Spanish error messages if API key missing. Subsequent requests are cache-first.
-- **UTC Timestamp Filtering**: Queries use UTC timestamps for timezone-aware filtering, ensuring accurate results across all timezones. Fixed critical timezone bug from previous date-string approach.
+- **Date-String Filtering**: Queries use local date strings (YYYY-MM-DD) for timezone-aware filtering, ensuring "Today" filter shows correct date across all timezones. Week ranges are Monday-Sunday. Fixed critical timezone bug from previous UTC timestamp approach.
 - **Bilingual Field Storage**: Events stored with both `eventOriginal` (English for categorization logic) and `event` (Spanish for UI display).
 - **Finnworlds API Integration**: Correct endpoint (`/api/v1/macrocalendar`) with ISO-2 country codes (`us`, `gb`, `de`, etc.). Impact mapping: "3"=high, "2"=medium, "1"=low.
-- **Bulk Database Operations**: Batches of 100 events with `ON CONFLICT DO UPDATE` for efficient upserts. Composite indexes on (event_date, country, impact) for fast filtering.
+- **Bulk Database Operations**: Batches of 100 events with `ON CONFLICT DO UPDATE` for efficient upserts. Composite indexes on (event_date, country, impact) for fast filtering. Auto-deduplication prevents duplicate IDs in same batch.
 - **Shared Utilities**: Extracted event taxonomy (200+ translations, categorization) and date-range logic to eliminate code duplication.
 - **Error Handling**: Comprehensive validation and graceful degradation. Spanish user messages with English technical details for debugging.
-- **90-Day Retention**: Automated cleanup job maintains reasonable database size.
+- **180-Day Retention**: Automated cleanup job maintains reasonable database size (6 months).
 
 ## External Dependencies
 

@@ -33,10 +33,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedImpacts = impacts.split(',').map(i => i.trim());
       }
 
-      // Query database cache using UTC timestamps for timezone accuracy
+      // Query database cache using date strings for timezone-safe filtering
       let events = await storage.getCachedEvents({
-        startUtc: range.startUtc,
-        endUtc: range.endUtc,
+        fromDate: range.startDate,
+        toDate: range.endDate,
         countries: selectedCountries,
         impacts: selectedImpacts,
       });
@@ -53,8 +53,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await refreshEventsCache(range.startDate, range.endDate);
               // Re-query after bootstrap
               events = await storage.getCachedEvents({
-                startUtc: range.startUtc,
-                endUtc: range.endUtc,
+                fromDate: range.startDate,
+                toDate: range.endDate,
                 countries: selectedCountries,
                 impacts: selectedImpacts,
               });
