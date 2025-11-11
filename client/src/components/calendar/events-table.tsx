@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { type EconomicEvent, countries } from "@shared/schema";
 import { format, parseISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
+import { formatNumber } from "@/lib/format-numbers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -65,11 +66,6 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
     } catch {
       return { date: dateStr, time: timeStr };
     }
-  };
-
-  const formatValue = (value: string | null) => {
-    if (!value || value === "N/A" || value === "") return "—";
-    return value;
   };
 
   const translateImpact = (impact: string) => {
@@ -206,13 +202,13 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                     </Badge>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-foreground" data-testid={`text-actual-${index}`}>
-                    {formatValue(event.actual)}
+                    {formatNumber(event.actual)}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-muted-foreground" data-testid={`text-forecast-${index}`}>
-                    {formatValue(event.forecast)}
+                    {formatNumber(event.forecast)}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-muted-foreground" data-testid={`text-previous-${index}`}>
-                    {formatValue(event.previous)}
+                    {formatNumber(event.previous)}
                   </td>
                 </tr>
               );
