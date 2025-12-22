@@ -1,4 +1,4 @@
-# Calendario Económico El Master
+# 1nsider - Calendario Económico
 
 Aplicación web de calendario económico global con integración de API Finnworlds.
 

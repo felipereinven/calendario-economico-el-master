@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw, Clock } from "lucide-react";
 import { format } from "date-fns";
-import logoElMaster from "@assets/cropped-logo-para-app-el-master-dorado-sin-fondo-2_1760415748004.png";
+import logo1nsider from "@assets/logo 1nsider.png";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
@@ -98,15 +98,15 @@ export default function CalendarPage() {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img 
-                  src={logoElMaster} 
-                  alt="El Master Logo" 
+                  src={logo1nsider} 
+                  alt="1nsider Logo" 
                   className="w-full h-full object-contain"
-                  data-testid="logo-el-master"
+                  data-testid="logo-1nsider"
                 />
               </div>
               <div>
                 <h1 className="text-base sm:text-xl font-bold text-foreground">
-                  El Master - Calendario Económico
+                  1nsider - Calendario Económico
                 </h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">
                   {events ? `${events.length} eventos` : "0 eventos"} • {countries.length} países • {filters.timezone?.split('/').pop() || 'UTC'}
