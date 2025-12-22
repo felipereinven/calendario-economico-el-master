@@ -10,6 +10,11 @@ const FINNWORLDS_API_KEY = process.env.FINNWORLDS_API_KEY;
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint for Railway/deployment monitoring
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // Economic events endpoint
   // Economic events endpoint - Now serves from database cache
   app.get("/api/events", async (req, res) => {
