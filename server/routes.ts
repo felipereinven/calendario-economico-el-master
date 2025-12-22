@@ -21,6 +21,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tz = (timezone as string) || "UTC";
       const range = calculateDateRange(period, tz);
 
+      console.log(`[/api/events] Period: ${period}, Timezone: ${tz}, Date range: ${range.startDate} to ${range.endDate}`);
+
       // Parse countries filter
       let selectedCountries: string[] | undefined;
       if (countries && typeof countries === "string" && countries.trim()) {
@@ -40,6 +42,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         countries: selectedCountries,
         impacts: selectedImpacts,
       });
+
+      console.log(`[/api/events] Found ${events.length} events for ${range.startDate} to ${range.endDate}`);
 
       // Smart hybrid fallback: handle empty cache scenarios
       if (events.length === 0) {
