@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, RefreshCw, Clock } from "lucide-react";
 import { format } from "date-fns";
-import logo1nsider from "@assets/logo 1nsider.png";
+import logo1nsider from "@assets/Logo 1nsider.png";
 
 export default function CalendarPage() {
   const [filters, setFilters] = useState<FilterOptions>({
