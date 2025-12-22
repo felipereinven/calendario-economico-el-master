@@ -56,14 +56,21 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
 
   const formatEventDateTime = (dateStr: string, timeStr: string) => {
     try {
-      // Combine date and time - API provides times in their local market timezone
-      // We convert to the user's selected timezone for display
-      const dateTime = parseISO(`${dateStr}T${timeStr}`);
+      // Ensure time has seconds (HH:MM:SS format)
+      const timeParts = timeStr.split(':');
+      const fullTime = timeParts.length === 2 
+        ? `${timeParts[0]}:${timeParts[1]}:00`
+        : timeStr; // Already has seconds
+      
+      // Parse as UTC (Z suffix) and convert to user's timezone
+      const dateTime = parseISO(`${dateStr}T${fullTime}Z`);
+      
       return {
         date: formatInTimeZone(dateTime, timezone, "MMM dd, yyyy"),
         time: formatInTimeZone(dateTime, timezone, "HH:mm"),
       };
-    } catch {
+    } catch (err) {
+      console.error('Format error:', { dateStr, timeStr, err });
       return { date: dateStr, time: timeStr };
     }
   };

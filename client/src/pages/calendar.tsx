@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type EconomicEvent, type FilterOptions, countries } from "@shared/schema";
 import { FilterControls } from "@/components/calendar/filter-controls";
 import { EventsTable } from "@/components/calendar/events-table";
@@ -12,6 +12,8 @@ import { format } from "date-fns";
 import logo1nsider from "@assets/Logo 1nsider.png";
 
 export default function CalendarPage() {
+  const queryClient = useQueryClient();
+  
   const [filters, setFilters] = useState<FilterOptions>({
     countries: [],
     impacts: [],
@@ -51,8 +53,15 @@ export default function CalendarPage() {
   const apiUrl = `/api/events${queryString ? `?${queryString}` : ""}`;
 
   const { data: events, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<EconomicEvent[]>({
-    queryKey: [apiUrl],
+    queryKey: ['api/events', filters.timezone, filters.dateRange, filters.countries, filters.impacts, filters.categories, filters.search], // Include all filters in cache key
+    queryFn: async () => {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error('Failed to fetch events');
+      return response.json();
+    },
     refetchInterval: refreshInterval > 0 ? refreshInterval : false,
+    staleTime: 2 * 24 * 60 * 60 * 1000, // 2 days - don't refetch if data is fresh
+    gcTime: 2 * 24 * 60 * 60 * 1000, // 2 days - keep in memory
   });
   
   // Update last updated timestamp when data is fetched (including refetches)
@@ -62,22 +71,26 @@ export default function CalendarPage() {
     }
   }, [dataUpdatedAt, isLoading]);
   
-  // Detectar cambio de día y actualizar automáticamente
+  // Check every 2 days if cache needs refresh (don't refetch constantly)
   useEffect(() => {
-    const checkDayChange = () => {
+    const checkIfShouldRefetch = () => {
       const currentDate = format(new Date(), "yyyy-MM-dd");
       if (currentDate !== lastCheckedDate) {
-        console.log(`Nuevo día detectado: ${currentDate}. Actualizando datos...`);
+        // Only refetch if cache is older than 2 days
+        const twoDays = 2 * 24 * 60 * 60 * 1000;
+        if (dataUpdatedAt && Date.now() - dataUpdatedAt > twoDays) {
+          console.log(`Cache > 2 days old. Refetching...`);
+          refetch();
+        }
         setLastCheckedDate(currentDate);
-        refetch(); // Actualizar datos automáticamente
       }
     };
 
-    // Revisar cada minuto si cambió el día
-    const interval = setInterval(checkDayChange, 60000); // 60 segundos
+    // Check every hour instead of every minute (less frequent)
+    const interval = setInterval(checkIfShouldRefetch, 3600000); // 1 hour
 
     return () => clearInterval(interval);
-  }, [lastCheckedDate, refetch]);
+  }, [lastCheckedDate, refetch, dataUpdatedAt]);
   
   // Notification system
   const { newEventCount, clearNotificationBadge } = useNotifications(events, {

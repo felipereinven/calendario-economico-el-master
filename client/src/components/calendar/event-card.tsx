@@ -36,9 +36,18 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
 
   const formatEventTime = (dateStr: string, timeStr: string) => {
     try {
-      const dateTime = parseISO(`${dateStr}T${timeStr}`);
+      // Ensure time has seconds (HH:MM:SS format)
+      const timeParts = timeStr.split(':');
+      const fullTime = timeParts.length === 2 
+        ? `${timeParts[0]}:${timeParts[1]}:00`
+        : timeStr; // Already has seconds
+      
+      // Parse as UTC (Z suffix) and convert to user's timezone
+      const dateTime = parseISO(`${dateStr}T${fullTime}Z`);
+      
       return formatInTimeZone(dateTime, timezone, "HH:mm");
-    } catch {
+    } catch (err) {
+      console.error('Format error:', { dateStr, timeStr, err });
       return timeStr;
     }
   };

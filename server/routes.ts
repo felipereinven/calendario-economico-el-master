@@ -5,6 +5,7 @@ import { insertWatchlistCountrySchema, insertWatchlistEventSchema } from "@share
 import { calculateDateRange } from "./utils/date-range";
 import { categorizeEvent } from "./utils/event-taxonomy";
 import { refreshEventsCache } from "./services/events-cache";
+import { toZonedTime, format } from "date-fns-tz";
 
 const FINNWORLDS_API_KEY = process.env.FINNWORLDS_API_KEY;
 
@@ -40,15 +41,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedImpacts = impacts.split(',').map(i => i.trim());
       }
 
-      // Query database cache using date strings for timezone-safe filtering
+      // Query database cache using UTC timestamps
+      // We'll fetch a broader range and filter by timezone-adjusted dates
+      const startUtc = new Date(range.startUtc);
+      startUtc.setDate(startUtc.getDate() - 1); // Fetch previous day for safety
+      
+      const endUtc = new Date(range.endUtc);
+      endUtc.setDate(endUtc.getDate() + 1); // Fetch next day for safety
+      
       let events = await storage.getCachedEvents({
-        fromDate: range.startDate,
-        toDate: range.endDate,
+        startUtc,
+        endUtc,
         countries: selectedCountries,
         impacts: selectedImpacts,
       });
 
-      console.log(`[/api/events] Found ${events.length} events for ${range.startDate} to ${range.endDate}`);
+      console.log(`[/api/events] Found ${events.length} events in UTC range, filtering to timezone: ${tz}`);
 
       // Smart hybrid fallback: handle empty cache scenarios
       if (events.length === 0) {
@@ -62,8 +70,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await refreshEventsCache(range.startDate, range.endDate);
               // Re-query after bootstrap
               events = await storage.getCachedEvents({
-                fromDate: range.startDate,
-                toDate: range.endDate,
+                startUtc,
+                endUtc,
                 countries: selectedCountries,
                 impacts: selectedImpacts,
               });
@@ -87,8 +95,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Fall through and return empty array
       }
 
+      // Filter events by timezone-adjusted dates
+      // Convert each event's UTC timestamp to the user's timezone and compare dates
+      let timezoneSafeEvents = events.filter((event) => {
+        const eventInUserTz = toZonedTime(new Date(event.eventTimestamp), tz);
+        const eventDateStr = format(eventInUserTz, "yyyy-MM-dd");
+        return eventDateStr >= range.startDate && eventDateStr <= range.endDate;
+      });
+
+      console.log(`[/api/events] After timezone adjustment: ${timezoneSafeEvents.length} events match ${range.startDate} to ${range.endDate} in ${tz}`);
+
       // Apply category filter in memory (use English original name)
-      let filteredEvents = events;
+      let filteredEvents = timezoneSafeEvents;
       if (categories && typeof categories === "string" && categories.trim()) {
         const selectedCategories = categories.split(',').map(c => c.trim());
         filteredEvents = filteredEvents.filter((event) => {
