@@ -40,8 +40,9 @@ scrape-*.ts
 analyze-*.ts
 migrate-*.ts
 
-# Screenshots & Images
+# Screenshots & Images (but allow logo)
 *.png
+!client/public/logo-insider.png
 *.jpg
 *.jpeg
 attached_assets/
