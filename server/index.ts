@@ -46,11 +46,15 @@ app.use((req, res, next) => {
   startScheduler();
 
   // Day 0: Initial data fetch on server start
-  // This ensures we have data immediately without waiting for the first cron job
-  // We run this asynchronously so it doesn't block server startup
-  refreshAllRanges().catch(err => {
-    console.error("Failed to run initial data fetch:", err);
-  });
+  // DISABLED in production to avoid Railway resource exhaustion
+  // The scheduler will handle updates every hour
+  if (process.env.NODE_ENV !== 'production') {
+    refreshAllRanges().catch(err => {
+      console.error("Failed to run initial data fetch:", err);
+    });
+  } else {
+    log("Skipping initial scraping in production - relying on scheduled jobs");
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
