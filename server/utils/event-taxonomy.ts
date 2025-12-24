@@ -1,6 +1,174 @@
-// Diccionario completo de traducciones de términos económicos (200+ términos)
-export const economicTranslations: Record<string, string> = {
+/**
+ * SISTEMA DE TRADUCCIÓN PROFESIONAL PARA EVENTOS ECONÓMICOS
+ * Estrategia híbrida de tres niveles:
+ * 1. Diccionario de frases completas (eventos completos)
+ * 2. Diccionario de términos individuales (palabras clave)
+ * 3. Procesamiento contextual (orden y estructura)
+ */
 
+// NIVEL 1: Diccionario de eventos completos (traducciones exactas)
+export const completeEventTranslations: Record<string, string> = {
+  // Empleo - Estados Unidos
+  "Non-Farm Payrolls": "Nóminas No Agrícolas",
+  "Nonfarm Payrolls": "Nóminas No Agrícolas",
+  "Average Hourly Earnings": "Ganancias por Hora Promedio",
+  "Initial Jobless Claims": "Solicitudes Iniciales de Desempleo",
+  "Continuing Jobless Claims": "Solicitudes Continuas de Desempleo",
+  "Unemployment Rate": "Tasa de Desempleo",
+  "Labor Force Participation Rate": "Tasa de Participación Laboral",
+  "ADP Nonfarm Employment Change": "Cambio en el Empleo No Agrícola ADP",
+  "ADP Employment Change": "Cambio en el Empleo ADP",
+  "Challenger Job Cuts": "Recortes de Empleos Challenger",
+  "JOLTS Job Openings": "Ofertas de Empleo JOLTS",
+  
+  // Inflación - Estados Unidos
+  "Consumer Price Index": "Índice de Precios al Consumidor",
+  "CPI": "IPC",
+  "Core CPI": "IPC Subyacente",
+  "Producer Price Index": "Índice de Precios al Productor",
+  "PPI": "IPP",
+  "Core PPI": "IPP Subyacente",
+  "PCE Price Index": "Índice de Precios PCE",
+  "Core PCE Price Index": "Índice de Precios PCE Subyacente",
+  "Import Price Index": "Índice de Precios de Importación",
+  "Export Price Index": "Índice de Precios de Exportación",
+  
+  // PMIs y Manufactura
+  "Manufacturing PMI": "PMI Manufacturero",
+  "Services PMI": "PMI de Servicios",
+  "Composite PMI": "PMI Compuesto",
+  "ISM Manufacturing PMI": "PMI Manufacturero ISM",
+  "ISM Services PMI": "PMI de Servicios ISM",
+  "ISM Non-Manufacturing PMI": "PMI No Manufacturero ISM",
+  "Markit Manufacturing PMI": "PMI Manufacturero Markit",
+  "Markit Services PMI": "PMI de Servicios Markit",
+  "Markit Composite PMI": "PMI Compuesto Markit",
+  "S&P Global Manufacturing PMI": "PMI Manufacturero S&P Global",
+  "S&P Global Services PMI": "PMI de Servicios S&P Global",
+  "S&P Global Composite PMI": "PMI Compuesto S&P Global",
+  
+  // PIB
+  "GDP Growth Rate": "Tasa de Crecimiento del PIB",
+  "Gross Domestic Product": "Producto Interno Bruto",
+  "GDP": "PIB",
+  "GDP Annualized": "PIB Anualizado",
+  "GDP Price Index": "Índice de Precios del PIB",
+  "GDP Deflator": "Deflactor del PIB",
+  "Real GDP": "PIB Real",
+  "Nominal GDP": "PIB Nominal",
+  
+  // Ventas y Consumo
+  "Retail Sales": "Ventas Minoristas",
+  "Core Retail Sales": "Ventas Minoristas Subyacentes",
+  "Retail Sales ex Autos": "Ventas Minoristas exc. Autos",
+  "Advance Retail Sales": "Ventas Minoristas Adelantadas",
+  "Consumer Spending": "Gasto del Consumidor",
+  "Personal Spending": "Gasto Personal",
+  "Personal Income": "Ingreso Personal",
+  "Disposable Income": "Ingreso Disponible",
+  "Consumer Credit": "Crédito al Consumidor",
+  
+  // Producción Industrial
+  "Industrial Production": "Producción Industrial",
+  "Manufacturing Production": "Producción Manufacturera",
+  "Capacity Utilization": "Utilización de Capacidad",
+  "Factory Orders": "Pedidos Industriales",
+  "Durable Goods Orders": "Pedidos de Bienes Duraderos",
+  "Core Durable Goods Orders": "Pedidos de Bienes Duraderos Subyacentes",
+  "Capital Goods Orders": "Pedidos de Bienes de Capital",
+  "New Orders": "Nuevos Pedidos",
+  
+  // Vivienda
+  "Building Permits": "Permisos de Construcción",
+  "Housing Starts": "Inicio de Viviendas",
+  "Existing Home Sales": "Ventas de Viviendas Existentes",
+  "New Home Sales": "Ventas de Viviendas Nuevas",
+  "Pending Home Sales": "Ventas de Viviendas Pendientes",
+  "Home Price Index": "Índice de Precios de Vivienda",
+  "Housing Price Index": "Índice de Precios de Vivienda",
+  "Case-Shiller Home Price Index": "Índice de Precios de Vivienda Case-Shiller",
+  "MBA Mortgage Applications": "Solicitudes de Hipotecas MBA",
+  "Mortgage Approvals": "Aprobaciones de Hipotecas",
+  
+  // Confianza y Sentimiento
+  "Consumer Confidence": "Confianza del Consumidor",
+  "Consumer Sentiment": "Sentimiento del Consumidor",
+  "Business Confidence": "Confianza Empresarial",
+  "Business Climate": "Clima Empresarial",
+  "ZEW Economic Sentiment": "Sentimiento Económico ZEW",
+  "IFO Business Climate": "Clima Empresarial IFO",
+  "NFIB Business Optimism Index": "Índice de Optimismo Empresarial NFIB",
+  "Michigan Consumer Sentiment": "Sentimiento del Consumidor Michigan",
+  "CB Consumer Confidence": "Confianza del Consumidor CB",
+  
+  // Comercio Exterior
+  "Trade Balance": "Balanza Comercial",
+  "Exports": "Exportaciones",
+  "Imports": "Importaciones",
+  "Current Account": "Cuenta Corriente",
+  "Goods Trade Balance": "Balanza Comercial de Bienes",
+  
+  // Bancos Centrales y Tasas
+  "Interest Rate Decision": "Decisión de Tasa de Interés",
+  "Fed Interest Rate Decision": "Decisión de Tasa de Interés de la Fed",
+  "ECB Interest Rate Decision": "Decisión de Tasa de Interés del BCE",
+  "BoE Interest Rate Decision": "Decisión de Tasa de Interés del BdI",
+  "BoJ Interest Rate Decision": "Decisión de Tasa de Interés del BdJ",
+  "FOMC Meeting Minutes": "Actas de Reunión del FOMC",
+  "FOMC Statement": "Declaración del FOMC",
+  "Fed Chair Speech": "Discurso del Presidente de la Fed",
+  "ECB Press Conference": "Conferencia de Prensa del BCE",
+  "Monetary Policy Statement": "Declaración de Política Monetaria",
+  
+  // Inventarios de Energía
+  "Crude Oil Inventories": "Inventarios de Petróleo Crudo",
+  "EIA Crude Oil Inventories": "Inventarios de Petróleo Crudo EIA",
+  "Gasoline Inventories": "Inventarios de Gasolina",
+  "Distillate Fuel Inventories": "Inventarios de Combustible Destilado",
+  "Natural Gas Storage": "Almacenamiento de Gas Natural",
+  
+  // Reino Unido Específico
+  "Claimant Count Change": "Cambio en el Conteo de Solicitantes",
+  "HMRC Payrolls Change": "Cambio en Nóminas HMRC",
+  "Average Earnings Index": "Índice de Ganancias Promedio",
+  
+  // Zona Euro Específico
+  "Harmonised Index of Consumer Prices": "Índice Armonizado de Precios al Consumidor",
+  "HICP": "IAPC",
+  
+  // China Específico
+  "Caixin Manufacturing PMI": "PMI Manufacturero Caixin",
+  "Caixin Services PMI": "PMI de Servicios Caixin",
+  "NBS Manufacturing PMI": "PMI Manufacturero NBS",
+  "NBS Non-Manufacturing PMI": "PMI No Manufacturero NBS",
+  
+  // Bonos del Tesoro
+  "3-Month Bill Auction": "Subasta de Letras a 3 Meses",
+  "6-Month Bill Auction": "Subasta de Letras a 6 Meses",
+  "52-Week Bill Auction": "Subasta de Letras a 52 Semanas",
+  "2-Year Note Auction": "Subasta de Notas a 2 Años",
+  "3-Year Note Auction": "Subasta de Notas a 3 Años",
+  "5-Year Note Auction": "Subasta de Notas a 5 Años",
+  "7-Year Note Auction": "Subasta de Notas a 7 Años",
+  "10-Year Note Auction": "Subasta de Notas a 10 Años",
+  "30-Year Bond Auction": "Subasta de Bonos a 30 Años",
+  
+  // Comercio Internacional
+  "Balance of Trade": "Balanza Comercial",
+  "Trade Balance": "Balanza Comercial",
+  
+  // Eventos específicos adicionales
+  "Machine Tool Orders": "Pedidos de Herramientas de Máquina",
+  "Eco Watchers Survey Current": "Encuesta Eco Watchers Actual",
+  "Eco Watchers Survey Outlook": "Encuesta Eco Watchers Perspectiva",
+  "Reuters Tankan Index": "Índice Reuters Tankan",
+  "BRC Retail Sales Monitor": "Monitor de Ventas Minoristas BRC",
+  "BOE Gov Bailey Speech": "Discurso del Gobernador Bailey del BdI",
+  "BOJ Gov Ueda Speech": "Discurso del Gobernador Ueda del BdJ",
+};
+
+// NIVEL 2: Diccionario de términos individuales
+export const economicTranslations: Record<string, string> = {
   // Indicadores económicos generales
   "GDP": "PIB",
   "Gross Domestic Product": "Producto Interno Bruto",
@@ -254,24 +422,491 @@ export const economicTranslations: Record<string, string> = {
   "Employees": "Empleados",
   "Employer": "Empleador",
   "Employers": "Empleadores",
+
+  // Términos faltantes identificados en análisis
+  "Vehicle": "Vehículos",
+  "Vehicles": "Vehículos",
+  "Total": "Total",
+  "Chair": "Presidente",
+  "Crude Oil": "Petróleo Crudo",
+  "Wholesale": "Mayorista",
+  "Natural Gas": "Gas Natural",
+  "Balance Sheet": "Balance General",
+  "Market Report": "Informe de Mercado",
+  "House Price": "Precio de Vivienda",
+  "Money Supply": "Oferta Monetaria",
+  "Distillate": "Destilados",
+  "Gasoline": "Gasolina",
+  "New": "Nuevos",
+  "Car": "Automóvil",
+  "Registrations": "Matriculaciones",
+  "Housing": "Vivienda",
+  "Used": "Usados",
+  "Bank Lending": "Préstamos Bancarios",
+  "Capital Expenditure": "Gasto de Capital",
+  "External Demand": "Demanda Externa",
+  "Private Consumption": "Consumo Privado",
+  "Employment Cost": "Costo Laboral",
+  "Benefits": "Beneficios",
+  "Wages": "Salarios",
+  "Refinery": "Refinería",
+  "Runs": "Operaciones",
+  "Projections": "Proyecciones",
+  "Current": "Actual",
+  "Shop Price": "Precio en Tienda",
+  "Rig Count": "Conteo de Plataformas",
+  "Large All Industry Capex": "Capex de Todas las Grandes Industrias",
+  "Tertiary Industry": "Industria Terciaria",
+  "Monetary Base": "Base Monetaria",
+  "Unit Labour Costs": "Costos Laborales Unitarios",
+  "Standing Committee": "Comité Permanente",
+  "Minutes": "Actas",
+  "Ratio": "Ratio",
+  "Current Conditions": "Condiciones Actuales",
+  "Bill Purchases": "Compras de Letras",
+  "Ex Food and Energy": "Excl. Alimentos y Energía",
+  "Participation Rate": "Tasa de Participación",
+  "Control Group": "Grupo de Control",
+  "Activity Index": "Índice de Actividad",
+  "President": "Presidente",
+  "Trends": "Tendencias",
+  "Non Defense": "No Defensa",
+  "Goods": "Bienes",
+  "Fixed Asset Investment": "Inversión en Activos Fijos",
+  "Inflation Rate": "Tasa de Inflación",
+  "Foreign Bond Investment": "Inversión en Bonos Extranjeros",
+  "Foreign Stock Investment": "Inversión en Acciones Extranjeras",
+  "Retail Sales Turnover": "Volumen de Ventas Minoristas",
+  "Industrial New Orders": "Nuevos Pedidos Industriales",
+  "Construction Output": "Producción de Construcción",
+  "Construction PMI": "PMI de Construcción",
+  "Services Sentiment": "Sentimiento de Servicios",
+  "Industrial Sentiment": "Sentimiento Industrial",
+  "Consumer Inflation Expectations": "Expectativas de Inflación del Consumidor",
+  "Business Survey": "Encuesta Empresarial",
+  "Manufacturing Sales": "Ventas Manufactureras",
+  "Building Consents": "Permisos de Construcción",
+  "Electronic Card Retail Sales": "Ventas Minoristas con Tarjeta Electrónica",
+  "Food Price Index": "Índice de Precios de Alimentos",
+  "Visitor Arrivals": "Llegada de Visitantes",
+  "Credit Card Spending": "Gasto con Tarjeta de Crédito",
+  "Machine Tool Orders": "Pedidos de Herramientas de Máquina",
+  "Corporate Goods Price Index": "Índice de Precios de Bienes Corporativos",
+  "Tertiary Industry Index": "Índice de Industria Terciaria",
+  "Capacity Utilization Score": "Puntaje de Utilización de Capacidad",
+  "Raw Materials Price Index": "Índice de Precios de Materias Primas",
+  "New Housing Price Index": "Índice de Precios de Vivienda Nueva",
+  "Wholesale Sales": "Ventas Mayoristas",
+  "Manufacturing Sales": "Ventas Manufactureras",
+  "Foreign Exchange Reserves": "Reservas de Divisas",
+  "Net Settlement": "Liquidación Neta",
+  "Overnight Rate": "Tasa a un Día",
+  "Lending Facility Rate": "Tasa de Facilidad de Préstamo",
+  "Deposit Facility Rate": "Tasa de Facilidad de Depósito",
+  "Marginal Lending Rate": "Tasa de Préstamo Marginal",
+  "Main Refinancing Rate": "Tasa Principal de Refinanciación",
+  "Public Sector Net Borrowing": "Endeudamiento Neto del Sector Público",
+  "CBI Industrial Trends Orders": "Pedidos de Tendencias Industriales CBI",
+  "GfK Consumer Confidence": "Confianza del Consumidor GfK",
+  "Nationwide Housing Prices": "Precios de Vivienda Nationwide",
+  "Halifax House Price Index": "Índice de Precios de Vivienda Halifax",
+  "RICS House Price Balance": "Balance de Precios de Vivienda RICS",
+  "Rightmove House Price Index": "Índice de Precios de Vivienda Rightmove",
+  "BRC Shop Price Index": "Índice de Precios en Tienda BRC",
+  "M4 Money Supply": "Oferta Monetaria M4",
+  "Public Sector Finances": "Finanzas del Sector Público",
+  "Govt Budget Value": "Valor del Presupuesto Gubernamental",
+  "Fiscal Balance": "Balance Fiscal",
+  "Budget Balance": "Balance Presupuestario",
+  "Trade Balance Non-EU": "Balanza Comercial No-UE",
+  "Industrial Turnover": "Facturación Industrial",
+  "Current Account Balance": "Saldo de Cuenta Corriente",
+  "Tourist Arrivals": "Llegadas de Turistas",
+  "Unemployment Benefit Claims": "Solicitudes de Beneficios de Desempleo",
+  "Job Vacancies": "Vacantes de Empleo",
+  "Labour Cost Index": "Índice de Costo Laboral",
+  "Hourly Wages": "Salarios por Hora",
+  "Private Sector Credit": "Crédito al Sector Privado",
+  "M3 Money Supply": "Oferta Monetaria M3",
+  "Loans to Households": "Préstamos a Hogares",
+  "Loans to Companies": "Préstamos a Empresas",
+  "Business Climate Indicator": "Indicador de Clima Empresarial",
+  "Economic Sentiment Indicator": "Indicador de Sentimiento Económico",
+  "Industrial Confidence": "Confianza Industrial",
+  "Services Confidence": "Confianza en Servicios",
+  "Consumer Confidence Final": "Confianza del Consumidor Final",
+  "Construction Confidence": "Confianza en Construcción",
+  "Retail Trade": "Comercio Minorista",
+  "Wholesale Trade": "Comercio Mayorista",
+  "Car Registration": "Matriculación de Automóviles",
+  "New Car Sales": "Ventas de Autos Nuevos",
+  "Used Car Sales": "Ventas de Autos Usados",
+  "Gasoline Prices": "Precios de la Gasolina",
+  "Diesel Prices": "Precios del Diesel",
+  "Heating Oil": "Aceite de Calefacción",
+  "Natural Gas Storage": "Almacenamiento de Gas Natural",
+  "Baker Hughes Rig Count": "Conteo de Plataformas Baker Hughes",
+  "API Crude Oil Stock": "Inventario de Petróleo Crudo API",
+  "EIA Crude Oil Stocks": "Inventarios de Petróleo Crudo EIA",
+  "EIA Gasoline Stocks": "Inventarios de Gasolina EIA",
+  "EIA Distillate Stocks": "Inventarios de Destilados EIA",
+  "EIA Refinery Crude Runs": "Procesamiento de Crudo en Refinerías EIA",
+  "EIA Cushing Crude Oil Stocks": "Inventarios de Crudo en Cushing EIA",
+  "EIA Natural Gas Storage": "Almacenamiento de Gas Natural EIA",
+  "Fed Balance Sheet": "Balance General de la Fed",
+  "Fed Interest Rate Decision": "Decisión de Tasa de Interés de la Fed",
+  "FOMC Economic Projections": "Proyecciones Económicas del FOMC",
+  "Fed Chair Powell Speech": "Discurso del Presidente de la Fed Powell",
+  "Fed Speeches": "Discursos de la Fed",
+  
+  // Nuevas traducciones Nivel 1 (Frases completas para corregir orden)
+  "Total Vehicle Sales": "Ventas Totales de Vehículos",
+  "Import Prices MoM": "Precios de Importación Mensual",
+  "Import Prices YoY": "Precios de Importación Anual",
+  "Export Prices MoM": "Precios de Exportación Mensual",
+  "Export Prices YoY": "Precios de Exportación Anual",
+  "Fed Balance Sheet": "Balance General de la Fed",
+  "Industrial Production MoM": "Producción Industrial Mensual",
+  "Industrial Production YoY": "Producción Industrial Anual",
+  "Total Social Financing": "Financiamiento Social Total",
+  "Retail Sales Control Group MoM": "Ventas Minoristas del Grupo de Control Mensual",
+  "Retail Sales Ex Gas/Autos MoM": "Ventas Minoristas excl. Gasolina/Autos Mensual",
+  "Durable Goods Orders ex Defense MoM": "Pedidos de Bienes Duraderos excl. Defensa Mensual",
+  "Non Defense Goods Orders Ex Air": "Pedidos de Bienes de No Defensa excl. Aéreos",
+  "Inflation Rate Ex-Food and Energy YoY": "Tasa de Inflación excl. Alimentos y Energía Anual",
+  "Household Spending MoM": "Gasto de los Hogares Mensual",
+  "Household Spending YoY": "Gasto de los Hogares Anual",
+  "Retail Price Index MoM": "Índice de Precios Minoristas Mensual",
+  "Retail Price Index YoY": "Índice de Precios Minoristas Anual",
+  "Household Consumption MoM": "Consumo de los Hogares Mensual",
+  "Jobseekers Total": "Total de Solicitantes de Empleo",
+  "Industrial Profits (YTD) YoY": "Beneficios Industriales (YTD) Anual",
+  "Retail Sales ex Fuel MoM": "Ventas Minoristas excl. Combustible Mensual",
+  "Retail Sales ex Fuel YoY": "Ventas Minoristas excl. Combustible Anual",
+  "PPI Ex Food, Energy and Trade MoM": "IPP excl. Alimentos, Energía y Comercio Mensual",
+  "PPI Ex Food, Energy and Trade YoY": "IPP excl. Alimentos, Energía y Comercio Anual",
+  "Full Year GDP Growth": "Crecimiento del PIB de Año Completo",
+  "Baker Hughes Total Rigs Count": "Conteo Total de Plataformas Baker Hughes",
+  "Baker Hughes Oil Rig Count": "Conteo de Plataformas Petroleras Baker Hughes",
+  "EIA Natural Gas Stocks Change": "Cambio en Inventarios de Gas Natural EIA",
+  "EIA Distillate Fuel Production Change": "Cambio en Producción de Combustible Destilado EIA",
+  "Ny Fed Bill Purchases 1 To 4 Months": "Compras de Letras de la Fed de NY (1 a 4 Meses)",
+  "Ny Fed Bill Purchases 4 To 12 Months": "Compras de Letras de la Fed de NY (4 a 12 Meses)",
+  "NY Fed Services Activity Index": "Índice de Actividad de Servicios de la Fed de NY",
+  "Chicago Fed National Activity Index": "Índice de Actividad Nacional de la Fed de Chicago",
+  "Dallas Fed Services Index": "Índice de Servicios de la Fed de Dallas",
+  "Dallas Fed Services Revenues Index": "Índice de Ingresos de Servicios de la Fed de Dallas",
+  "Richmond Fed Services Revenues Index": "Índice de Ingresos de Servicios de la Fed de Richmond",
+  "Richmond Fed Manufacturing Shipments Index": "Índice de Envíos Manufactureros de la Fed de Richmond",
+  "Philly Fed Business Conditions": "Condiciones Empresariales de la Fed de Filadelfia",
+  "Philly Fed CAPEX Index": "Índice CAPEX de la Fed de Filadelfia",
+  "Philly Fed Employment": "Empleo de la Fed de Filadelfia",
+  "Philly Fed Prices Paid": "Precios Pagados de la Fed de Filadelfia",
+  "Philly Fed New Orders": "Nuevos Pedidos de la Fed de Filadelfia",
+  "Kansas Fed Composite Index": "Índice Compuesto de la Fed de Kansas",
+  "Iea Oil Market Report": "Informe del Mercado del Petróleo de la AIE",
+  "S&P Global Composite PMI Flash": "PMI Compuesto S&P Global Flash",
+  "S&P Global Manufacturing PMI Flash": "PMI Manufacturero S&P Global Flash",
+  "S&P Global Services PMI Flash": "PMI de Servicios S&P Global Flash",
+  "S&P Global Construction PMI": "PMI de Construcción S&P Global",
+  "National People'S Congress Standing Committee": "Comité Permanente del Congreso Nacional del Pueblo",
+  "Jobs/applications ratio": "Ratio Empleos/Solicitudes",
+  "International Monetary Market (Imm) Date": "Fecha del Mercado Monetario Internacional (IMM)",
+
+  // Correcciones finales de nombres propios y estructuras complejas
+  "S&P/Case-Shiller Home Price MoM": "Índice de Precios de Vivienda S&P/Case-Shiller Mensual",
+  "S&P/Case-Shiller Home Price YoY": "Índice de Precios de Vivienda S&P/Case-Shiller Anual",
+  "Philadelphia Fed Manufacturing Index": "Índice Manufacturero de la Fed de Filadelfia",
+  "Fed Bowman Speech": "Discurso de Bowman (Fed)",
+  "Fed Paulson Speech": "Discurso de Paulson (Fed)",
+  "Fed Hammack Speech": "Discurso de Hammack (Fed)",
+  "Fed Goolsbee Speech": "Discurso de Goolsbee (Fed)",
+  "Fed Miran Speech": "Discurso de Miran (Fed)",
+  "Fed Williams Speech": "Discurso de Williams (Fed)",
+  "Fed Bostic Speech": "Discurso de Bostic (Fed)",
+  "Fed Waller Speech": "Discurso de Waller (Fed)",
+  "Fed Press Conference": "Conferencia de Prensa de la Fed",
+  "FOMC Minutes": "Actas del FOMC",
+
+  "Treasury Currency Reports": "Informes de Divisas del Tesoro",
+  "Beige Book": "Libro Beige",
+  "TIC Net Long-Term Transactions": "Transacciones Netas a Largo Plazo TIC",
+  "Overall Net Capital Flows": "Flujos de Capital Neto Totales",
+  "Foreign Bond Investment": "Inversión en Bonos Extranjeros",
+  "Foreign Stock Investment": "Inversión en Acciones Extranjeras",
+  "Redbook": "Redbook",
+  "Chain Store Sales": "Ventas de Cadenas de Tiendas",
+  "MBA Mortgage Market Index": "Índice de Mercado Hipotecario MBA",
+  "MBA Mortgage Refinance Index": "Índice de Refinanciamiento Hipotecario MBA",
+  "MBA Purchase Index": "Índice de Compra MBA",
+  "Mortgage Rate": "Tasa Hipotecaria",
+  "NAHB Housing Market Index": "Índice de Mercado de Vivienda NAHB",
+  "Housing Starts MoM": "Inicio de Viviendas Mensual",
+  "Building Permits MoM": "Permisos de Construcción Mensual",
+  "Existing Home Sales MoM": "Ventas de Viviendas Existentes Mensual",
+  "New Home Sales MoM": "Ventas de Viviendas Nuevas Mensual",
+  "Pending Home Sales MoM": "Ventas de Viviendas Pendientes Mensual",
+  "Construction Spending": "Gasto en Construcción",
+  "Factory Orders MoM": "Pedidos de Fábrica Mensual",
+  "Durable Goods Orders MoM": "Pedidos de Bienes Duraderos Mensual",
+  "Durables Ex Transport": "Duraderos Excl. Transporte",
+  "Cap Goods Ship Non Def Ex Air": "Envíos de Bienes de Capital No Defensa Excl. Aéreo",
+  "Business Inventories": "Inventarios Empresariales",
+  "Wholesale Inventories": "Inventarios Mayoristas",
+  "Retail Inventories": "Inventarios Minoristas",
+  "Personal Income MoM": "Ingreso Personal Mensual",
+  "Personal Spending MoM": "Gasto Personal Mensual",
+  "Real Personal Consumption": "Consumo Personal Real",
+  "PCE Price Index MoM": "Índice de Precios PCE Mensual",
+  "PCE Price Index YoY": "Índice de Precios PCE Anual",
+  "Core PCE Price Index MoM": "Índice de Precios PCE Subyacente Mensual",
+  "Core PCE Price Index YoY": "Índice de Precios PCE Subyacente Anual",
+  "Employment Cost Index": "Índice de Costo del Empleo",
+  "Unit Labor Costs": "Costos Laborales Unitarios",
+  "Nonfarm Productivity": "Productividad No Agrícola",
+  "Real Earnings": "Ganancias Reales",
+  "Average Weekly Hours": "Promedio de Horas Semanales",
+  "Challenger Job Cuts": "Recortes de Empleo Challenger",
+  "ADP Employment Change": "Cambio de Empleo ADP",
+  "Initial Jobless Claims": "Solicitudes Iniciales de Desempleo",
+  "Continuing Jobless Claims": "Solicitudes Continuas de Desempleo",
+  "Jobless Claims 4-Week Avg": "Promedio de 4 Semanas de Solicitudes de Desempleo",
+  "Labor Force Participation": "Participación de la Fuerza Laboral",
+  "U6 Unemployment Rate": "Tasa de Desempleo U6",
+  "Michigan Consumer Sentiment": "Sentimiento del Consumidor Michigan",
+  "Michigan Current Conditions": "Condiciones Actuales Michigan",
+  "Michigan Inflation Expectations": "Expectativas de Inflación Michigan",
+  "Michigan 5 Year Inflation Expectations": "Expectativas de Inflación a 5 Años Michigan",
+  "CB Consumer Confidence": "Confianza del Consumidor CB",
+  "IBD/TIPP Economic Optimism": "Optimismo Económico IBD/TIPP",
+  "Chicago PMI": "PMI de Chicago",
+  "Dallas Fed Manufacturing Index": "Índice Manufacturero de la Fed de Dallas",
+  "Richmond Fed Manufacturing Index": "Índice Manufacturero de la Fed de Richmond",
+  "Kansas Fed Manufacturing Index": "Índice Manufacturero de la Fed de Kansas",
+  "Philly Fed Manufacturing Index": "Índice Manufacturero de la Fed de Filadelfia",
+  "Empire State Manufacturing Index": "Índice Manufacturero Empire State",
+  "NY Empire State Manufacturing Index": "Índice Manufacturero Empire State NY",
+  "S&P/CS HPI Composite - 20 n.s.a.": "Índice de Precios de Vivienda S&P/CS Compuesto - 20 n.s.a.",
+  "S&P/CS HPI Composite - 20 s.a.": "Índice de Precios de Vivienda S&P/CS Compuesto - 20 s.a.",
+  "FHFA House Price Index": "Índice de Precios de Vivienda FHFA",
+
+  // Nuevos términos Nivel 2 (Agregados)
+  "Fuel": "Combustible",
+  "Household": "Hogares",
+  "Jobseekers": "Solicitantes de Empleo",
+  "Farm": "Agrícola",
+  "Paid": "Pagados",
+  "Food": "Alimentos",
+  "Trade": "Comercio",
+  "Full": "Completo",
+  "Date": "Fecha",
+  "Monetary": "Monetario",
+  "Social": "Social",
+  "Financing": "Financiamiento",
+  "Defense": "Defensa",
+  "Air": "Aéreo",
+  "Shipments": "Envíos",
+  "Conditions": "Condiciones",
+  "People": "Pueblo",
+  "Congress": "Congreso",
+  "Standing": "Permanente",
+  "Committee": "Comité",
+  "Applications": "Solicitudes",
+  "Ratio": "Ratio",
+  "Flash": "Flash",
+  "Prel": "Preliminar",
+  "Final": "Final",
+  "Est": "Est.",
+  "2nd": "2da",
+  "To": "a",
+  "Months": "Meses",
+  "Year": "Año",
+  "Years": "Años",
+  "Bill": "Letra",
+  "Purchases": "Compras",
+  "Activity": "Actividad",
+  "National": "Nacional",
+  "Services": "Servicios",
+  "Revenues": "Ingresos",
+  "Manufacturing": "Manufactura",
+  "Index": "Índice",
+  "Composite": "Compuesto",
+  "Construction": "Construcción",
+  "Market": "Mercado",
+  "Report": "Informe",
+  "Oil": "Petróleo",
+  "Natural": "Natural",
+  "Gas": "Gas",
+  "Stocks": "Inventarios",
+  "Change": "Cambio",
+  "Production": "Producción",
+  "Sales": "Ventas",
+  "Total": "Total",
+  "Vehicle": "Vehículos",
+  "Import": "Importación",
+  "Export": "Exportación",
+  "Prices": "Precios",
+  "Price": "Precio",
+  "Global": "Global",
+  "Balance": "Balance",
+  "Sheet": "General",
+  "Fed": "Fed",
+  "Speech": "Discurso",
+  "Conference": "Conferencia",
+  "Press": "Prensa",
+  "Minutes": "Actas",
+  "Projections": "Proyecciones",
+  "Economic": "Económico",
+  "Interest": "Interés",
+  "Rate": "Tasa",
+  "Decision": "Decisión",
+  "Unemployment": "Desempleo",
+  "Capacity": "Capacidad",
+  "Utilization": "Utilización",
+  "Rig": "Plataforma",
+  "Count": "Conteo",
+  "Rigs": "Plataformas",
+  "Profits": "Beneficios",
+  "Growth": "Crecimiento",
+  "International": "Internacional",
+  "Turnover": "Volumen",
+  "Arrivals": "Llegadas",
+  "Vacancies": "Vacantes",
+  "Labour": "Laboral",
+  "Cost": "Costo",
+  "Hourly": "Por Hora",
+  "Private": "Privado",
+  "Sector": "Sector",
+  "Loans": "Préstamos",
+  "Households": "Hogares",
+  "Companies": "Empresas",
+  "Climate": "Clima",
+  "Indicator": "Indicador",
+  "Registration": "Matriculación",
+  "Diesel": "Diesel",
+  "Heating": "Calefacción",
+  "Baker": "Baker",
+  "Hughes": "Hughes",
+  "API": "API",
+  "EIA": "EIA",
+  "Cushing": "Cushing",
+  "TIC": "TIC",
+  "Long-Term": "Largo Plazo",
+  "Transactions": "Transacciones",
+  "Flows": "Flujos",
+  "Redbook": "Redbook",
+  "Chain": "Cadena",
+  "Store": "Tienda",
+  "MBA": "MBA",
+  "Refinance": "Refinanciamiento",
+  "Purchase": "Compra",
+  "NAHB": "NAHB",
+  "Starts": "Inicios",
+  "Permits": "Permisos",
+  "Existing": "Existentes",
+  "Pending": "Pendientes",
+  "Durables": "Duraderos",
+  "Transport": "Transporte",
+  "Cap": "Cap",
+  "Ship": "Envíos",
+  "Non": "No",
+  "Def": "Def",
+  "Productivity": "Productividad",
+  "Weekly": "Semanal",
+  "Hours": "Horas",
+  "Force": "Fuerza",
+  "U6": "U6",
+  "IBD/TIPP": "IBD/TIPP",
+  "Chicago": "Chicago",
+  "Dallas": "Dallas",
+  "Richmond": "Richmond",
+  "Kansas": "Kansas",
+  "Philly": "Philly",
+  "Empire": "Empire",
+  "State": "State",
+  "NY": "NY",
+  "S&P/CS": "S&P/CS",
+  "HPI": "HPI",
+  "FHFA": "FHFA",
 };
 
+
 /**
- * Translate economic event names from English to Spanish
+ * SISTEMA DE TRADUCCIÓN PROFESIONAL PARA EVENTOS ECONÓMICOS
+ * 
+ * Estrategia de traducción en tres niveles:
+ * 
+ * NIVEL 1 (Prioridad Alta): Frases Completas
+ * - Busca coincidencias exactas de eventos completos
+ * - Ejemplo: "Initial Jobless Claims" → "Solicitudes Iniciales de Desempleo"
+ * - Garantiza traducciones perfectas para eventos comunes
+ * 
+ * NIVEL 2 (Prioridad Media): Términos Compuestos
+ * - Traduce frases de múltiples palabras primero
+ * - Ejemplo: "Interest Rate" antes que "Interest" o "Rate"
+ * - Mantiene el contexto de términos económicos
+ * 
+ * NIVEL 3 (Prioridad Baja): Palabras Individuales
+ * - Traduce palabras sueltas que no fueron capturadas
+ * - Respeta límites de palabras (word boundaries)
+ * - Evita traducciones parciales incorrectas
+ * 
+ * NORMALIZACIÓN FINAL:
+ * - Limpia espacios dobles y extra
+ * - Elimina puntuación redundante
+ * - Capitaliza apropiadamente
  */
 export function translateEventName(eventName: string): string {
-  let translated = eventName;
+  if (!eventName) return '';
   
-  // Sort by length descending to avoid partial replacements
-  const sortedKeys = Object.keys(economicTranslations).sort((a, b) => b.length - a.length);
+  let translated = eventName.trim();
   
-  for (const key of sortedKeys) {
-    const regex = new RegExp(`\\b${key}\\b`, 'gi');
-    translated = translated.replace(regex, economicTranslations[key]);
+  // NIVEL 1: Traducción de eventos completos (exactos)
+  // Primero intentamos traducción 1:1 de eventos conocidos
+  if (completeEventTranslations[translated]) {
+    return completeEventTranslations[translated];
   }
   
-  return translated.trim();
+  // También intentamos case-insensitive para eventos completos
+  const lowerEventName = translated.toLowerCase();
+  const exactMatch = Object.keys(completeEventTranslations).find(
+    key => key.toLowerCase() === lowerEventName
+  );
+  if (exactMatch) {
+    return completeEventTranslations[exactMatch];
+  }
+  
+  // NIVEL 2 & 3: Traducción inteligente por partes
+  // Ordenamos las claves por longitud (descendente) para priorizar frases sobre palabras
+  const allTranslations = { ...completeEventTranslations, ...economicTranslations };
+  const sortedKeys = Object.keys(allTranslations)
+    .sort((a, b) => b.length - a.length);
+  
+  // Aplicamos las traducciones respetando word boundaries
+  for (const englishTerm of sortedKeys) {
+    // Escapamos caracteres especiales de regex
+    const escapedTerm = englishTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Creamos regex que respeta límites de palabra
+    // Usamos 'gi' para case-insensitive y global
+    const regex = new RegExp(`\\b${escapedTerm}\\b`, 'gi');
+    
+    // Reemplazamos si encontramos coincidencia
+    if (regex.test(translated)) {
+      translated = translated.replace(regex, allTranslations[englishTerm]);
+    }
+  }
+  
+  // NORMALIZACIÓN FINAL
+  // Limpiamos espacios dobles
+  translated = translated.replace(/\s+/g, ' ').trim();
+  
+  // Limpiamos puntuación redundante
+  translated = translated.replace(/\s+([,.:;!?])/g, '$1');
+  
+  return translated;
 }
+
 
 // Keywords for categorizing events
 export const categoryKeywords = {
