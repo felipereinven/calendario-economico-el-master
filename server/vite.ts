@@ -76,6 +76,12 @@ export function serveStatic(app: Express) {
     );
   }
 
+  log(`Serving static files from: ${distPath}`);
+  
+  // List files in dist/public for debugging
+  const files = fs.readdirSync(distPath);
+  log(`Files in dist/public: ${files.join(", ")}`);
+
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
