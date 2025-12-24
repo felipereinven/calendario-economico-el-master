@@ -139,7 +139,7 @@ export default function CalendarPage() {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img 
-                  src="/Logo 1nsider.png" 
+                  src="/logo-insider.png" 
                   alt="Insider Logo" 
                   className="w-full h-full object-contain"
                 />
