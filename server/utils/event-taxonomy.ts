@@ -913,19 +913,22 @@ export const categoryKeywords = {
   employment: [
     'employment', 'unemployment', 'jobless', 'payroll', 'jobs', 'labor', 'wage', 'earnings', 'nfp',
     'empleo', 'desempleo', 'nómina', 'trabajo', 'laboral', 'salario', 'ganancias', 'sueldo',
-    'claimant', 'solicitante', 'desempleados'
+    'claimant', 'solicitante', 'desempleados', 'peticiones', 'subsidio', 'adp', 'desempleado',
+    'empleados', 'trabajadores', 'tasa de empleo'
   ],
   inflation: [
     'cpi', 'ppi', 'inflation', 'price index', 'prices', 'rpi', 'core',
     'inflación', 'precios', 'ipc', 'ipp', 'índice de precios', 'harmonised', 'harmonizado',
-    'consumer price', 'producer price', 'precio consumidor', 'precio productor'
+    'consumer price', 'producer price', 'precio consumidor', 'precio productor', 'precio del consumidor'
   ],
   monetary: [
     'interest rate', 'fed', 'fomc', 'central bank', 'monetary policy', 'ecb', 'boc', 'boe', 'boj', 'rba', 'rbnz',
     'tasa de interés', 'política monetaria', 'banco central', 'bdi', 'bdc', 'bde',
     'speech', 'discurso', 'minutes', 'actas', 'decision', 'decisión',
     'bond', 'bill', 'note', 'auction', 'bono', 'letra', 'subasta', 'treasury', 'tesoro',
-    'yield', 'rendimiento', 'debt', 'deuda'
+    'yield', 'rendimiento', 'debt', 'deuda', 'hipoteca', 'mortgage', 'mba', 'refinanciación',
+    'hipotecaria', 'tipos de interés', 'tasa hipotecaria', 'gobernador', 'governor',
+    'reserva federal', 'comité', 'committee', 'jgb', 'reunión de política', 'política monetaria'
   ],
   manufacturing: [
     'manufacturing', 'pmi', 'industrial production', 'factory', 'orders', 'output',
@@ -936,7 +939,7 @@ export const categoryKeywords = {
     'services', 'retail sales', 'consumer spending', 'consumption',
     'servicios', 'ventas minoristas', 'gasto del consumidor', 'consumo', 'ventas',
     'sales', 'spending', 'gastos', 'construction', 'construcción', 'building', 'permits',
-    'permisos', 'vivienda', 'housing'
+    'permisos', 'vivienda', 'housing', 'inicios de construcción', 'órdenes de construcción'
   ],
   trade: [
     'trade', 'export', 'import', 'balance', 'current account', 'goods',
@@ -949,12 +952,21 @@ export const categoryKeywords = {
   ],
   energy: [
     'oil', 'energy', 'crude', 'natural gas', 'petroleum', 'eia', 'opec',
-    'petróleo', 'energía', 'crudo', 'gas', 'inventories', 'inventarios', 'stocks'
+    'petróleo', 'energía', 'crudo', 'gas', 'inventories', 'inventarios', 'stocks',
+    'gasolina', 'destilados', 'refinería', 'combustible', 'calefacción', 'refinerías',
+    'producción de gasolina', 'producción de destilados', 'reservas de gas', 'lácteos'
   ],
   confidence: [
     'confidence', 'sentiment', 'survey', 'outlook', 'expectations', 'index', 'optimism',
     'confianza', 'sentimiento', 'encuesta', 'perspectivas', 'expectativas', 'índice', 'optimismo',
-    'business', 'consumer', 'negocios', 'consumidor', 'empresarial', 'zew', 'ifo', 'nfib'
+    'business', 'consumer', 'negocios', 'consumidor', 'empresarial', 'zew', 'ifo', 'nfib',
+    'indicador adelantado', 'indicador coincidente', 'leading indicator', 'coincident', 'adelantado',
+    'coincidente', 'comité permanente', 'congreso'
+  ],
+  financial: [
+    'inversión', 'investment', 'acciones', 'stocks', 'extranjero', 'foreign', 'bonos extranjeros',
+    'foreign bonds', 'compras de bonos', 'bond purchases', 'stock investment', 'inversión en acciones',
+    'flujos de capital', 'capital flows', 'finanzas', 'finance', 'bursátil', 'wall street'
   ],
 };
 

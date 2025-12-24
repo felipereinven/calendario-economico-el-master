@@ -36,6 +36,7 @@ export interface IStorage {
   saveCachedEvents(events: InsertCachedEvent[]): Promise<void>;
   getLatestCachedDate(): Promise<string | null>;
   deleteOldCachedEvents(daysToKeep: number): Promise<void>;
+  clearCachedEvents(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -148,9 +149,12 @@ export class DatabaseStorage implements IStorage {
         .onConflictDoUpdate({
           target: cachedEvents.id,
           set: {
+            date: sql`EXCLUDED.date`,
+            eventTimestamp: sql`EXCLUDED.event_timestamp`,
             actual: sql`EXCLUDED.actual`,
             forecast: sql`EXCLUDED.forecast`,
             previous: sql`EXCLUDED.previous`,
+            category: sql`EXCLUDED.category`,
             fetchedAt: sql`NOW()`,
           },
         });
@@ -173,6 +177,10 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(cachedEvents)
       .where(sql`${cachedEvents.date} < ${cutoffString}`);
+  }
+
+  async clearCachedEvents(): Promise<void> {
+    await db.delete(cachedEvents);
   }
 }
 

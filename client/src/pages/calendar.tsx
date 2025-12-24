@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { type EconomicEvent, type FilterOptions, countries } from "@shared/schema";
 import { FilterControls } from "@/components/calendar/filter-controls";
@@ -6,21 +6,27 @@ import { EventsTable } from "@/components/calendar/events-table";
 import { NotificationSettings } from "@/components/calendar/notification-settings";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw, Clock } from "lucide-react";
+import { Loader2, RefreshCw, Clock, Calendar, Search } from "lucide-react";
 import { format } from "date-fns";
-import logo1nsider from "@assets/Logo 1nsider.png";
+import { getCalendarDateRange } from "@/lib/date-utils";
 
 export default function CalendarPage() {
   const queryClient = useQueryClient();
+  
+  // Detectar zona horaria automáticamente del navegador
+  const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   
   const [filters, setFilters] = useState<FilterOptions>({
     countries: [],
     impacts: [],
     dateRange: "today",
-    search: "",
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timezone: detectedTimezone, // Usar zona horaria detectada automáticamente
   });
+  
+  // Estado de búsqueda local (no afecta query del servidor)
+  const [searchQuery, setSearchQuery] = useState("");
   
   const [refreshInterval, setRefreshInterval] = useState<number>(0); // 0 = disabled
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -39,12 +45,17 @@ export default function CalendarPage() {
   if (filters.categories && filters.categories.length > 0) {
     queryParams.set("categories", filters.categories.join(","));
   }
+  
+  // Calculate date range based on client time
   if (filters.dateRange) {
+    const { from, to } = getCalendarDateRange(filters.dateRange);
+    queryParams.set("from", from);
+    queryParams.set("to", to);
+    // We still send dateRange for backward compatibility or logging if needed, 
+    // but the backend should prioritize from/to
     queryParams.set("dateRange", filters.dateRange);
   }
-  if (filters.search) {
-    queryParams.set("search", filters.search);
-  }
+  
   if (filters.timezone) {
     queryParams.set("timezone", filters.timezone);
   }
@@ -52,8 +63,9 @@ export default function CalendarPage() {
   const queryString = queryParams.toString();
   const apiUrl = `/api/events${queryString ? `?${queryString}` : ""}`;
 
-  const { data: events, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<EconomicEvent[]>({
-    queryKey: ['api/events', filters.timezone, filters.dateRange, filters.countries, filters.impacts, filters.categories, filters.search], // Include all filters in cache key
+  // Fetch events from API
+  const { data: rawEvents, isLoading, error, refetch, isFetching, dataUpdatedAt } = useQuery<EconomicEvent[]>({
+    queryKey: ['api/events', filters.timezone, filters.dateRange, filters.countries, filters.impacts, filters.categories],
     queryFn: async () => {
       const response = await fetch(apiUrl);
       if (!response.ok) throw new Error('Failed to fetch events');
@@ -63,6 +75,22 @@ export default function CalendarPage() {
     staleTime: 2 * 24 * 60 * 60 * 1000, // 2 days - don't refetch if data is fresh
     gcTime: 2 * 24 * 60 * 60 * 1000, // 2 days - keep in memory
   });
+  
+  // Aplicar filtro de búsqueda en el cliente
+  const events = useMemo(() => {
+    if (!rawEvents) return undefined;
+    if (!searchQuery.trim()) return rawEvents;
+    
+    const search = searchQuery.toLowerCase().trim();
+    const filtered = rawEvents.filter((event) =>
+      event.event.toLowerCase().includes(search) ||
+      event.country.toLowerCase().includes(search) ||
+      event.countryName.toLowerCase().includes(search)
+    );
+    
+    console.log(`Filtro aplicado: "${search}" - ${filtered.length} de ${rawEvents.length} eventos`);
+    return filtered;
+  }, [rawEvents, searchQuery]);
   
   // Update last updated timestamp when data is fetched (including refetches)
   useEffect(() => {
@@ -111,15 +139,14 @@ export default function CalendarPage() {
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img 
-                  src={logo1nsider} 
-                  alt="1nsider Logo" 
+                  src="/Logo 1nsider.png" 
+                  alt="Insider Logo" 
                   className="w-full h-full object-contain"
-                  data-testid="logo-1nsider"
                 />
               </div>
               <div>
                 <h1 className="text-base sm:text-xl font-bold text-foreground">
-                  1nsider - Calendario Económico
+                  Calendario Económico Insider
                 </h1>
                 <p className="text-xs text-muted-foreground hidden sm:block">
                   {events ? `${events.length} eventos` : "0 eventos"} • {countries.length} países • {filters.timezone?.split('/').pop() || 'UTC'}
@@ -219,7 +246,7 @@ export default function CalendarPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <p className="text-sm text-destructive-foreground">
-              Error al cargar los datos económicos desde Finnworlds API. Verifica la conexión. Los datos pueden no estar actualizados.
+              Error al cargar los datos económicos. Verifica la conexión. Los datos pueden no estar actualizados.
             </p>
           </div>
         </div>
@@ -228,7 +255,12 @@ export default function CalendarPage() {
       {/* Filter Controls */}
       <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-muted/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <FilterControls filters={filters} onFilterChange={handleFilterChange} />
+          <FilterControls 
+            filters={filters} 
+            onFilterChange={handleFilterChange}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
         </div>
       </div>
 

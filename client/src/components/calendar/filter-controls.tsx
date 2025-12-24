@@ -23,6 +23,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface FilterControlsProps {
   filters: FilterOptions;
   onFilterChange: (filters: Partial<FilterOptions>) => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
 }
 
 const impactLevels = [
@@ -32,17 +34,15 @@ const impactLevels = [
 ];
 
 const timePeriods = [
+  { value: "yesterday" as const, label: "Ayer" },
   { value: "today" as const, label: "Hoy" },
+  { value: "tomorrow" as const, label: "Mañana" },
   { value: "thisWeek" as const, label: "Esta Semana" },
   { value: "nextWeek" as const, label: "Próxima Semana" },
   { value: "thisMonth" as const, label: "Este Mes" },
 ];
 
-export function FilterControls({ filters, onFilterChange }: FilterControlsProps) {
-  const isMobile = useIsMobile();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState(filters.search || "");
-
+function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }: FilterControlsProps) {
   const toggleCountry = (countryCode: string) => {
     const current = filters.countries || [];
     const updated = current.includes(countryCode)
@@ -67,14 +67,9 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
     onFilterChange({ categories: updated });
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    onFilterChange({ search: value });
-  };
-
-  // Reusable filter content
-  const FilterContent = () => (
+  return (
     <div className="space-y-6">
+      {/* Country, Category, and Search Filters */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Country Filter */}
         <div className="flex-1 min-w-0">
@@ -177,16 +172,18 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
 
         {/* Search */}
         <div className="flex-1 min-w-0">
-          <label className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
+          <label htmlFor="search-events" className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
             Buscar Eventos
           </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              type="search"
+              id="search-events"
+              name="search"
+              type="text"
               placeholder="Buscar por evento o país..."
-              value={searchValue}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
               className="pl-9"
               data-testid="input-search"
             />
@@ -243,7 +240,7 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
       {((filters.countries && filters.countries.length > 0) ||
         (filters.impacts && filters.impacts.length > 0) ||
         (filters.categories && filters.categories.length > 0) ||
-        filters.search) && (
+        searchQuery) && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">Filtros activos:</span>
           {filters.countries?.map((code) => {
@@ -273,15 +270,20 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
               </Badge>
             ) : null;
           })}
-          {filters.search && (
+          {searchQuery && (
             <Badge variant="secondary">
-              Búsqueda: {filters.search}
+              Búsqueda: {searchQuery}
             </Badge>
           )}
         </div>
       )}
     </div>
   );
+}
+
+export function FilterControls({ filters, onFilterChange, searchQuery, onSearchChange }: FilterControlsProps) {
+  const isMobile = useIsMobile();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   // Mobile: Sheet with trigger button
   if (isMobile) {
@@ -314,12 +316,12 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
               {((filters.countries && filters.countries.length > 0) ||
                 (filters.impacts && filters.impacts.length > 0) ||
                 (filters.categories && filters.categories.length > 0) ||
-                filters.search) && (
+                searchQuery) && (
                 <Badge variant="secondary" className="ml-2">
                   {(filters.countries?.length || 0) +
                     (filters.impacts?.length || 0) +
                     (filters.categories?.length || 0) +
-                    (filters.search ? 1 : 0)}
+                    (searchQuery ? 1 : 0)}
                 </Badge>
               )}
             </Button>
@@ -331,7 +333,12 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
                 Personaliza la visualización de eventos económicos
               </SheetDescription>
             </SheetHeader>
-            <FilterContent />
+            <FilterContent 
+              filters={filters}
+              onFilterChange={onFilterChange}
+              searchQuery={searchQuery}
+              onSearchChange={onSearchChange}
+            />
             <div className="mt-6 pt-4 border-t">
               <Button
                 onClick={() => setIsSheetOpen(false)}
@@ -348,5 +355,12 @@ export function FilterControls({ filters, onFilterChange }: FilterControlsProps)
   }
 
   // Desktop: Full filters always visible
-  return <FilterContent />;
+  return (
+    <FilterContent 
+      filters={filters}
+      onFilterChange={onFilterChange}
+      searchQuery={searchQuery}
+      onSearchChange={onSearchChange}
+    />
+  );
 }

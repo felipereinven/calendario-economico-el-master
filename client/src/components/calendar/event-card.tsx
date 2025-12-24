@@ -23,6 +23,18 @@ const impactDots = {
   low: "bg-impact-low",
 };
 
+const impactFires = {
+  high: "🔥🔥🔥",
+  medium: "🔥🔥",
+  low: "🔥",
+};
+
+const impactLabels = {
+  high: "Alta volatilidad esperada",
+  medium: "Moderada volatilidad esperada",
+  low: "Baja volatilidad esperada",
+};
+
 export function EventCard({ event, timezone, index }: EventCardProps) {
   const getCountryName = (countryCode: string) => {
     const country = countries.find((c) => c.code === countryCode);
@@ -34,21 +46,28 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
     return country?.flag || "";
   };
 
-  const formatEventTime = (dateStr: string, timeStr: string) => {
+  const formatEventTime = (event: EconomicEvent) => {
     try {
-      // Ensure time has seconds (HH:MM:SS format)
-      const timeParts = timeStr.split(':');
-      const fullTime = timeParts.length === 2 
-        ? `${timeParts[0]}:${timeParts[1]}:00`
-        : timeStr; // Already has seconds
+      let dateTime: Date;
       
-      // Parse as UTC (Z suffix) and convert to user's timezone
-      const dateTime = parseISO(`${dateStr}T${fullTime}Z`);
+      if (event.eventTimestamp) {
+        // Use the full timestamp if available
+        dateTime = typeof event.eventTimestamp === 'string' 
+          ? parseISO(event.eventTimestamp) 
+          : event.eventTimestamp;
+      } else {
+        // Fallback to constructing from date and time
+        const timeParts = event.time.split(':');
+        const fullTime = timeParts.length === 2 
+          ? `${timeParts[0]}:${timeParts[1]}:00`
+          : event.time;
+        dateTime = parseISO(`${event.date}T${fullTime}Z`);
+      }
       
       return formatInTimeZone(dateTime, timezone, "HH:mm");
     } catch (err) {
-      console.error('Format error:', { dateStr, timeStr, err });
-      return timeStr;
+      console.error('Format error:', err);
+      return event.time;
     }
   };
 
@@ -69,7 +88,7 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
       {/* Time Column */}
       <div className="flex flex-col items-center min-w-[60px]">
         <span className="text-lg font-semibold font-mono text-foreground" data-testid={`text-time-${index}`}>
-          {formatEventTime(event.date, event.time)}
+          {formatEventTime(event)}
         </span>
         <span className="text-xs text-muted-foreground font-mono">
           {getCountryFlag(event.country)}
@@ -116,18 +135,10 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
       </div>
 
       {/* Impact Indicator */}
-      <div className="flex flex-col items-center justify-center gap-0.5" data-testid={`badge-impact-${index}`}>
-        {ImpactIcon.map((Icon, i) => (
-          <Icon
-            key={i}
-            className={`w-3 h-3 ${
-              event.impact === 'high' ? 'text-impact-high' :
-              event.impact === 'medium' ? 'text-impact-medium' :
-              'text-impact-low'
-            }`}
-            strokeWidth={3}
-          />
-        ))}
+      <div className="flex flex-col items-center justify-center gap-0.5" data-testid={`badge-impact-${index}`} title={impactLabels[event.impact]}>
+        <span className="text-xl leading-none">
+          {impactFires[event.impact]}
+        </span>
       </div>
     </div>
   );

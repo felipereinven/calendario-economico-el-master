@@ -1,4 +1,4 @@
-import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addWeeks } from "date-fns";
+import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, addWeeks, addDays } from "date-fns";
 import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 export interface DateRange {
@@ -11,12 +11,12 @@ export interface DateRange {
 
 /**
  * Calculate date range based on period and timezone
- * @param period - "today" | "thisWeek" | "nextWeek" | "thisMonth"
+ * @param period - "yesterday" | "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth"
  * @param timezone - IANA timezone string (default: "UTC")
  * @returns DateRange with UTC timestamps and date strings
  */
 export function calculateDateRange(
-  period: "today" | "thisWeek" | "nextWeek" | "thisMonth" = "today",
+  period: "yesterday" | "today" | "tomorrow" | "thisWeek" | "nextWeek" | "thisMonth" = "today",
   timezone: string = "UTC"
 ): DateRange {
   // Get current time in the specified timezone
@@ -28,10 +28,24 @@ export function calculateDateRange(
   let localLabel: string;
 
   switch (period) {
+    case "yesterday":
+      const yesterday = addDays(nowInZone, -1);
+      startLocal = startOfDay(yesterday);
+      endLocal = endOfDay(yesterday);
+      localLabel = `Ayer (${format(yesterday, "dd/MM/yyyy")})`;
+      break;
+
     case "today":
       startLocal = startOfDay(nowInZone);
       endLocal = endOfDay(nowInZone);
       localLabel = `Hoy (${format(nowInZone, "dd/MM/yyyy")})`;
+      break;
+
+    case "tomorrow":
+      const tomorrow = addDays(nowInZone, 1);
+      startLocal = startOfDay(tomorrow);
+      endLocal = endOfDay(tomorrow);
+      localLabel = `Mañana (${format(tomorrow, "dd/MM/yyyy")})`;
       break;
 
     case "thisWeek":

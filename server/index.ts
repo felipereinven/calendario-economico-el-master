@@ -1,7 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeRefreshJobs } from "./services/cache-coordinator";
+import { startScheduler } from "./scheduler";
+import { refreshAllRanges } from "./services/investing-scraper";
 
 const app = express();
 app.use(express.json());
@@ -42,7 +43,14 @@ app.use((req, res, next) => {
   
   // Initialize background cache refresh jobs
   log("Initializing cache refresh jobs...");
-  initializeRefreshJobs();
+  startScheduler();
+
+  // Day 0: Initial data fetch on server start
+  // This ensures we have data immediately without waiting for the first cron job
+  // We run this asynchronously so it doesn't block server startup
+  refreshAllRanges().catch(err => {
+    console.error("Failed to run initial data fetch:", err);
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

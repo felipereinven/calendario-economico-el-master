@@ -27,6 +27,18 @@ const impactDots = {
   low: "bg-impact-low",
 };
 
+const impactFires = {
+  high: "🔥🔥🔥",
+  medium: "🔥🔥",
+  low: "🔥",
+};
+
+const impactLabels = {
+  high: "Alta volatilidad esperada",
+  medium: "Moderada volatilidad esperada",
+  low: "Baja volatilidad esperada",
+};
+
 export function EventsTable({ events, timezone }: EventsTableProps) {
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,24 +66,37 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
     return country?.flag || "";
   };
 
-  const formatEventDateTime = (dateStr: string, timeStr: string) => {
+  const formatEventDateTime = (event: EconomicEvent) => {
     try {
-      // Ensure time has seconds (HH:MM:SS format)
-      const timeParts = timeStr.split(':');
-      const fullTime = timeParts.length === 2 
-        ? `${timeParts[0]}:${timeParts[1]}:00`
-        : timeStr; // Already has seconds
+      let dateTime: Date;
       
-      // Parse as UTC (Z suffix) and convert to user's timezone
-      const dateTime = parseISO(`${dateStr}T${fullTime}Z`);
+      // Si tenemos eventTimestamp, usarlo directamente
+      if (event.eventTimestamp) {
+        dateTime = typeof event.eventTimestamp === 'string' 
+          ? parseISO(event.eventTimestamp) 
+          : event.eventTimestamp;
+      } else {
+        // Fallback: construir desde date + time
+        const timeParts = event.time.split(':');
+        const fullTime = timeParts.length === 2 
+          ? `${timeParts[0]}:${timeParts[1]}:00`
+          : event.time;
+        
+        dateTime = parseISO(`${event.date}T${fullTime}Z`);
+      }
       
       return {
         date: formatInTimeZone(dateTime, timezone, "MMM dd, yyyy"),
         time: formatInTimeZone(dateTime, timezone, "HH:mm"),
+        fullDateTime: dateTime,
       };
     } catch (err) {
-      console.error('Format error:', { dateStr, timeStr, err });
-      return { date: dateStr, time: timeStr };
+      console.error('Format error:', { event, err });
+      return { 
+        date: event.date, 
+        time: event.time,
+        fullDateTime: new Date(),
+      };
     }
   };
 
@@ -84,11 +109,31 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
     return translations[impact] || impact;
   };
 
-  // Paginación
-  const totalPages = Math.ceil(events.length / pageSize);
+  const getActualColor = (actual: string | null, previous: string | null) => {
+    if (!actual || !previous) return "text-foreground";
+    
+    const actualNum = parseFloat(actual.replace(/[^0-9.-]/g, ""));
+    const previousNum = parseFloat(previous.replace(/[^0-9.-]/g, ""));
+    
+    if (isNaN(actualNum) || isNaN(previousNum)) return "text-foreground";
+    
+    if (actualNum > previousNum) return "text-green-600 font-semibold";
+    if (actualNum < previousNum) return "text-red-600 font-semibold";
+    return "text-foreground";
+  };
+
+  // Ordenar eventos por hora
+  const sortedEvents = [...events].sort((a, b) => {
+    const dateTimeA = a.eventTimestamp ? new Date(a.eventTimestamp) : new Date(`${a.date}T${a.time}Z`);
+    const dateTimeB = b.eventTimestamp ? new Date(b.eventTimestamp) : new Date(`${b.date}T${b.time}Z`);
+    return dateTimeA.getTime() - dateTimeB.getTime();
+  });
+
+  // Paginación con eventos ordenados
+  const totalPages = Math.ceil(sortedEvents.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedEvents = events.slice(startIndex, endIndex);
+  const paginatedEvents = sortedEvents.slice(startIndex, endIndex);
 
   // Resetear a página 1 cuando cambian los eventos o el tamaño de página
   const handlePageSizeChange = (newSize: string) => {
@@ -159,7 +204,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                 scope="col"
                 className="px-4 py-3 text-right text-xs font-semibold text-foreground uppercase tracking-wider"
               >
-                Real
+                Actual
               </th>
               <th
                 scope="col"
@@ -177,7 +222,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
           </thead>
           <tbody className="divide-y divide-border bg-background">
             {paginatedEvents.map((event, index) => {
-              const { date, time } = formatEventDateTime(event.date, event.time);
+              const { date, time } = formatEventDateTime(event);
               return (
                 <tr
                   key={event.id}
@@ -200,15 +245,16 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                     <div className="max-w-md">{event.event}</div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-center" data-testid={`badge-impact-${index}`}>
-                    <Badge
-                      variant="outline"
-                      className={`${impactColors[event.impact]} gap-1.5`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${impactDots[event.impact]}`} />
-                      {translateImpact(event.impact)}
-                    </Badge>
+                    <div className="flex items-center justify-center">
+                      <span 
+                        className="text-xl cursor-help" 
+                        title={impactLabels[event.impact]}
+                      >
+                        {impactFires[event.impact]}
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-foreground" data-testid={`text-actual-${index}`}>
+                  <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-right ${getActualColor(event.actual, event.previous)}`} data-testid={`text-actual-${index}`}>
                     {formatNumber(event.actual)}
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-muted-foreground" data-testid={`text-forecast-${index}`}>

@@ -5,8 +5,9 @@ import { createInsertSchema } from "drizzle-zod";
 // Economic Event Schema
 export const economicEventSchema = z.object({
   id: z.string(),
+  eventTimestamp: z.string().or(z.date()), // Full UTC timestamp (converted from GMT+1)
   date: z.string(), // ISO date string
-  time: z.string(), // Time in UTC
+  time: z.string(), // Time in GMT+1 as scraped from Investing.com (original, not converted)
   country: z.string(), // Country code (e.g., "US", "EUR", "GB")
   countryName: z.string(), // Full country name
   event: z.string(), // Event name
@@ -14,6 +15,7 @@ export const economicEventSchema = z.object({
   actual: z.string().nullable(), // Actual value
   forecast: z.string().nullable(), // Forecast/consensus value
   previous: z.string().nullable(), // Previous value
+  category: z.string().nullable().optional(), // Event category
 });
 
 export type EconomicEvent = z.infer<typeof economicEventSchema>;
@@ -21,14 +23,13 @@ export type EconomicEvent = z.infer<typeof economicEventSchema>;
 // Economic categories
 export const economicCategories = [
   { value: "employment", label: "Empleo", icon: "👥" },
+  { value: "credit", label: "Crédito", icon: "💳" },
+  { value: "balance", label: "Balance", icon: "⚖️" },
+  { value: "economic-activity", label: "Actividad Económica", icon: "📊" },
+  { value: "central-bank", label: "Banco Central", icon: "🏦" },
+  { value: "bonds", label: "Bonos", icon: "📜" },
   { value: "inflation", label: "Inflación", icon: "📈" },
-  { value: "monetary", label: "Política Monetaria", icon: "🏛️" },
-  { value: "manufacturing", label: "Manufactura", icon: "🏭" },
-  { value: "services", label: "Servicios", icon: "🔔" },
-  { value: "gdp", label: "PIB y Crecimiento", icon: "📊" },
-  { value: "trade", label: "Comercio Exterior", icon: "🌐" },
-  { value: "energy", label: "Energía", icon: "⚡" },
-  { value: "confidence", label: "Confianza", icon: "😊" },
+  { value: "confidence", label: "Índice de Confianza", icon: "😊" },
 ] as const;
 
 export type EconomicCategory = typeof economicCategories[number]["value"];
@@ -38,8 +39,7 @@ export const filterOptionsSchema = z.object({
   countries: z.array(z.string()).optional(),
   impacts: z.array(z.enum(["high", "medium", "low"])).optional(),
   categories: z.array(z.string()).optional(),
-  dateRange: z.enum(["today", "thisWeek", "nextWeek", "thisMonth"]).optional(),
-  search: z.string().optional(),
+  dateRange: z.enum(["yesterday", "today", "tomorrow", "thisWeek", "nextWeek", "thisMonth"]).optional(),
   timezone: z.string().optional(),
 });
 
@@ -92,6 +92,7 @@ export const cachedEvents = pgTable("cached_events", {
   actual: text("actual"), // Actual value
   forecast: text("forecast"), // Forecast value
   previous: text("previous"), // Previous value
+  category: varchar("category", { length: 50 }), // Event category (employment, inflation, etc.)
   fetchedAt: timestamp("fetched_at", { withTimezone: true, mode: 'date' }).defaultNow().notNull(), // When this was fetched
   createdAt: timestamp("created_at", { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({

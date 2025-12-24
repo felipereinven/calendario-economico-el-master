@@ -1,15 +1,12 @@
-import { refreshEventsCache } from "./events-cache";
+import { refreshAllRanges } from "./investing-scraper";
 import { storage } from "../storage";
-import { getRefreshRange } from "../utils/date-range";
 
 // Lock to prevent concurrent refresh jobs
 let isRefreshing = false;
 let lastRefreshTime = 0;
 
-const COUNTRIES = ['USA', 'EUR', 'DEU', 'FRA', 'ESP', 'GBR', 'CHN', 'JPN'];
-
 /**
- * Nightly job: Refresh events for current month + next 60 days
+ * Nightly job: Refresh events from Investing.com (all ranges)
  */
 export async function refreshMonthlyCache(): Promise<void> {
   if (isRefreshing) {
@@ -19,57 +16,44 @@ export async function refreshMonthlyCache(): Promise<void> {
 
   try {
     isRefreshing = true;
-    console.log("Starting monthly cache refresh...");
+    console.log("Starting cache refresh from Investing.com...");
 
-    // Start from beginning of current month
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const fromDate = startOfMonth.toISOString().split('T')[0];
+    // Refrescar todos los rangos del scraper
+    await refreshAllRanges();
 
-    // Refresh for 90 days forward (3 months)
-    const range = getRefreshRange(90);
-    await refreshEventsCache(fromDate, range.endDate, COUNTRIES);
-
-    // Clean up old events (keep 180 days / 6 months)
+    // Limpiar eventos antiguos (mantener 180 días / 6 meses)
     await storage.deleteOldCachedEvents(180);
 
     lastRefreshTime = Date.now();
-    console.log("Monthly cache refresh complete");
+    console.log("Cache refresh complete");
   } catch (error) {
-    console.error("Monthly refresh failed:", error);
+    console.error("Cache refresh failed:", error);
   } finally {
     isRefreshing = false;
   }
 }
 
 /**
- * Daily job: Refresh events for today ±7 days (14-day window)
- * Runs at 14:00 UTC, 12 hours offset from monthly job at 02:00 UTC
+ * Daily job: Refresh today and tomorrow events
  */
 export async function refreshDailyWindow(): Promise<void> {
   if (isRefreshing) {
     console.log("Daily refresh skipped: another refresh is in progress - will retry in 30 minutes");
-    // Retry after 30 minutes if skipped due to concurrent refresh
     setTimeout(refreshDailyWindow, 30 * 60 * 1000);
     return;
   }
 
   try {
     isRefreshing = true;
-    console.log("Starting daily window refresh (14-day range)...");
+    console.log("Starting daily refresh from Investing.com...");
 
-    // Today ±7 days (14 days total)
-    const range = getRefreshRange(14);
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
-    const from = sevenDaysAgo.toISOString().split('T')[0];
-    const to = range.endDate;
-
-    await refreshEventsCache(from, to, COUNTRIES);
+    // Solo refrescar today y tomorrow (más frecuente)
+    const { getInvestingEvents } = await import("./investing-scraper");
+    await getInvestingEvents("today");
+    await getInvestingEvents("tomorrow");
 
     lastRefreshTime = Date.now();
-    console.log("Daily window refresh complete");
+    console.log("Daily refresh complete");
   } catch (error) {
     console.error("Daily refresh failed:", error);
   } finally {
@@ -159,16 +143,11 @@ async function checkInitialData(): Promise<void> {
       }
       
       isRefreshing = true;
-      console.log("No cached data found, running initial month + next week refresh...");
+      console.log("No cached data found, running initial refresh from Investing.com...");
       
       try {
-        // Load current month + next 67 days (~2 months to ensure full coverage)
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const fromDate = startOfMonth.toISOString().split('T')[0];
-        const range = getRefreshRange(67);
-        
-        await refreshEventsCache(fromDate, range.endDate, COUNTRIES);
+        // Refresh all ranges from Investing.com scraper
+        await refreshAllRanges();
         
         lastRefreshTime = Date.now();
         console.log("Initial data refresh complete");
