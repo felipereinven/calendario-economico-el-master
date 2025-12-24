@@ -116,12 +116,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (from && to) {
         // If explicit dates are provided (from frontend calculation), use them
         // We assume 'from' and 'to' are ISO strings in UTC
+        const fromDate = new Date(from as string);
+        const toDate = new Date(to as string);
+        
+        // Validate dates
+        if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+          return res.status(400).json({
+            error: "Invalid date format",
+            from,
+            to
+          });
+        }
+        
         range = {
-          startUtc: new Date(from as string),
-          endUtc: new Date(to as string),
+          startUtc: fromDate,
+          endUtc: toDate,
           // For logging/debugging purposes
-          startDate: format(toZonedTime(new Date(from as string), tz), "yyyy-MM-dd"),
-          endDate: format(toZonedTime(new Date(to as string), tz), "yyyy-MM-dd")
+          startDate: format(toZonedTime(fromDate, tz), "yyyy-MM-dd"),
+          endDate: format(toZonedTime(toDate, tz), "yyyy-MM-dd")
         };
         console.log(`[/api/events] Using explicit range: ${from} to ${to}`);
       } else {
