@@ -2,15 +2,18 @@ import {
   watchlistCountries, 
   watchlistEvents, 
   cachedEvents,
+  eventNotifications,
   type WatchlistCountry, 
   type WatchlistEvent, 
   type InsertWatchlistCountry, 
   type InsertWatchlistEvent,
   type CachedEvent,
-  type InsertCachedEvent
+  type InsertCachedEvent,
+  type EventNotification,
+  type InsertEventNotification
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, inArray, sql } from "drizzle-orm";
+import { eq, and, gte, lte, inArray, sql, isNull } from "drizzle-orm";
 
 // Storage interface for the application
 export interface IStorage {
@@ -23,6 +26,14 @@ export interface IStorage {
   getWatchlistEvents(sessionId: string): Promise<WatchlistEvent[]>;
   addWatchlistEvent(event: InsertWatchlistEvent): Promise<WatchlistEvent>;
   removeWatchlistEvent(sessionId: string, eventId: string): Promise<void>;
+
+  // Event Notifications
+  getEventNotifications(sessionId: string): Promise<EventNotification[]>;
+  getEventNotificationsByEvent(sessionId: string, eventId: string): Promise<EventNotification[]>;
+  getPendingNotifications(beforeTime: Date): Promise<EventNotification[]>;
+  addEventNotification(notification: InsertEventNotification): Promise<EventNotification>;
+  removeEventNotification(sessionId: string, eventId: string, minutesBefore: number): Promise<void>;
+  markNotificationAsSent(id: number): Promise<void>;
 
   // Cached Events
   getCachedEvents(params: {
@@ -86,6 +97,68 @@ export class DatabaseStorage implements IStorage {
           eq(watchlistEvents.eventId, eventId)
         )
       );
+  }
+
+  // Event Notifications
+  async getEventNotifications(sessionId: string): Promise<EventNotification[]> {
+    return db
+      .select()
+      .from(eventNotifications)
+      .where(eq(eventNotifications.userId, sessionId));
+  }
+
+  async getEventNotificationsByEvent(sessionId: string, eventId: string): Promise<EventNotification[]> {
+    return db
+      .select()
+      .from(eventNotifications)
+      .where(
+        and(
+          eq(eventNotifications.userId, sessionId),
+          eq(eventNotifications.eventId, eventId)
+        )
+      );
+  }
+
+  async getPendingNotifications(beforeTime: Date): Promise<EventNotification[]> {
+    return db
+      .select()
+      .from(eventNotifications)
+      .where(
+        and(
+          isNull(eventNotifications.notificationSent),
+          lte(
+            sql`${eventNotifications.eventTimestamp} - (${eventNotifications.minutesBefore} * INTERVAL '1 minute')`,
+            beforeTime
+          )
+        )
+      );
+  }
+
+  async addEventNotification(notification: InsertEventNotification): Promise<EventNotification> {
+    const [result] = await db
+      .insert(eventNotifications)
+      .values(notification)
+      .returning();
+    return result;
+  }
+
+  async removeEventNotification(sessionId: string, eventId: string, minutesBefore: number): Promise<void> {
+    await db
+      .delete(eventNotifications)
+      .where(
+        and(
+          eq(eventNotifications.userId, sessionId),
+          eq(eventNotifications.eventId, eventId),
+          eq(eventNotifications.minutesBefore, minutesBefore)
+        )
+      );
+  }
+
+  async markNotificationAsSent(id: number): Promise<void> {
+    await db
+      .update(eventNotifications)
+      .set({ notificationSent: new Date() })
+      .where(eq(eventNotifications.id, id));
   }
 
   // Cached Events

@@ -1,6 +1,5 @@
 import { type FilterOptions, countries, economicCategories } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -9,15 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Search, ChevronDown, TrendingUp, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ChevronDown, TrendingUp } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface FilterControlsProps {
@@ -25,6 +22,8 @@ interface FilterControlsProps {
   onFilterChange: (filters: Partial<FilterOptions>) => void;
   searchQuery: string;
   onSearchChange: (value: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const impactLevels = [
@@ -69,7 +68,7 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
 
   return (
     <div className="space-y-6">
-      {/* Country, Category, and Search Filters */}
+      {/* Country, Category Filters (removed search - now in header) */}
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Country Filter */}
         <div className="flex-1 min-w-0">
@@ -91,7 +90,7 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 z-[200]" align="start">
+            <DropdownMenuContent className="w-56 z-[300]" align="start">
               <DropdownMenuCheckboxItem
                 checked={!filters.countries || filters.countries.length === 0}
                 onCheckedChange={() => onFilterChange({ countries: [] })}
@@ -141,7 +140,7 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
                 <ChevronDown className="ml-2 h-4 w-4 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 z-[200]" align="start">
+            <DropdownMenuContent className="w-56 z-[300]" align="start">
               <DropdownMenuCheckboxItem
                 checked={!filters.categories || filters.categories.length === 0}
                 onCheckedChange={() => onFilterChange({ categories: [] })}
@@ -168,26 +167,6 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-
-        {/* Search */}
-        <div className="flex-1 min-w-0">
-          <label htmlFor="search-events" className="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">
-            Buscar Eventos
-          </label>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search-events"
-              name="search"
-              type="text"
-              placeholder="Buscar por evento o país..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9"
-              data-testid="input-search"
-            />
-          </div>
         </div>
       </div>
 
@@ -281,86 +260,38 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
   );
 }
 
-export function FilterControls({ filters, onFilterChange, searchQuery, onSearchChange }: FilterControlsProps) {
+export function FilterControls({ filters, onFilterChange, searchQuery, onSearchChange, open, onOpenChange }: FilterControlsProps) {
   const isMobile = useIsMobile();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Mobile: Sheet with trigger button
-  if (isMobile) {
+  // Desktop: Mostrar filtros expandidos siempre
+  if (!isMobile) {
     return (
-      <div className="space-y-3">
-        {/* Time Period Quick Filters - Always visible on mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
-          {timePeriods.map((period) => (
-            <Button
-              key={period.value}
-              variant={filters.dateRange === period.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => onFilterChange({ dateRange: period.value })}
-              data-testid={`button-period-${period.value}`}
-              className="shrink-0"
-            >
-              {period.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Advanced Filters Sheet Trigger */}
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="w-full justify-between" data-testid="button-open-filters">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4" />
-                <span>Filtros Avanzados</span>
-              </div>
-              {((filters.countries && filters.countries.length > 0) ||
-                (filters.impacts && filters.impacts.length > 0) ||
-                (filters.categories && filters.categories.length > 0) ||
-                searchQuery) && (
-                <Badge variant="secondary" className="ml-2">
-                  {(filters.countries?.length || 0) +
-                    (filters.impacts?.length || 0) +
-                    (filters.categories?.length || 0) +
-                    (searchQuery ? 1 : 0)}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
-            <SheetHeader className="mb-4">
-              <SheetTitle>Filtros Avanzados</SheetTitle>
-              <SheetDescription>
-                Personaliza la visualización de eventos económicos
-              </SheetDescription>
-            </SheetHeader>
-            <FilterContent 
-              filters={filters}
-              onFilterChange={onFilterChange}
-              searchQuery={searchQuery}
-              onSearchChange={onSearchChange}
-            />
-            <div className="mt-6 pt-4 border-t">
-              <Button
-                onClick={() => setIsSheetOpen(false)}
-                className="w-full"
-                data-testid="button-close-filters"
-              >
-                Aplicar Filtros
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+      <FilterContent 
+        filters={filters}
+        onFilterChange={onFilterChange}
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+      />
     );
   }
 
-  // Desktop: Full filters always visible
+  // Mobile: Usar Dialog con botón
   return (
-    <FilterContent 
-      filters={filters}
-      onFilterChange={onFilterChange}
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Filtros Avanzados</DialogTitle>
+          <DialogDescription>
+            Personaliza la visualización de eventos económicos
+          </DialogDescription>
+        </DialogHeader>
+        <FilterContent 
+          filters={filters}
+          onFilterChange={onFilterChange}
+          searchQuery={searchQuery}
+          onSearchChange={onSearchChange}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

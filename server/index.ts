@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startScheduler } from "./scheduler";
+import { startNotificationScheduler } from "./services/notification-scheduler";
 import { refreshAllRanges } from "./services/investing-scraper";
 
 const app = express();
@@ -44,6 +45,10 @@ app.use((req, res, next) => {
   // Initialize background cache refresh jobs
   log("Initializing cache refresh jobs...");
   startScheduler();
+
+  // Initialize notification scheduler
+  log("Initializing notification scheduler...");
+  startNotificationScheduler();
 
   // Day 0: Initial data fetch on server start
   // DISABLED in production to avoid Railway resource exhaustion

@@ -5,12 +5,14 @@ import { FilterControls } from "@/components/calendar/filter-controls";
 import { EventsTable } from "@/components/calendar/events-table";
 import { NotificationSettings } from "@/components/calendar/notification-settings";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useEventNotifications } from "@/hooks/use-event-notifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw, Clock, Calendar, Search } from "lucide-react";
+import { Loader2, RefreshCw, Clock, Calendar, Search, SlidersHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { getCalendarDateRange } from "@/lib/date-utils";
+import { getSessionId } from "@/lib/session";
 
 export default function CalendarPage() {
   const queryClient = useQueryClient();
@@ -27,12 +29,16 @@ export default function CalendarPage() {
   
   // Estado de búsqueda local (no afecta query del servidor)
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
   const [refreshInterval, setRefreshInterval] = useState<number>(0); // 0 = disabled
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationImpactLevels, setNotificationImpactLevels] = useState<("high" | "medium" | "low")[]>(["high"]);
   const [lastCheckedDate, setLastCheckedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+
+  // Session ID for notifications (consistent across devices)
+  const sessionId = getSessionId();
 
   // Build query string from filters
   const queryParams = new URLSearchParams();
@@ -120,11 +126,14 @@ export default function CalendarPage() {
     return () => clearInterval(interval);
   }, [lastCheckedDate, refetch, dataUpdatedAt]);
   
-  // Notification system
+  // Notification system (legacy global notifications)
   const { newEventCount, clearNotificationBadge } = useNotifications(events, {
     enabled: notificationsEnabled,
     impactLevels: notificationImpactLevels,
   });
+
+  // Event-specific notifications (new feature)
+  useEventNotifications(events, sessionId, filters.timezone || detectedTimezone);
 
   const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
     setFilters((prev) => ({ ...prev, ...newFilters }));
@@ -133,7 +142,7 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-[100] border-b bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-[100] border-b bg-card">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -209,6 +218,17 @@ export default function CalendarPage() {
                 onClearBadge={clearNotificationBadge}
               />
               
+              {/* Mobile filters button - icon only */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowAdvancedFilters(true)}
+                data-testid="button-advanced-filters-mobile"
+                className="sm:hidden h-9 w-9"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </Button>
+              
               {/* Manual Refresh Button */}
               <Button
                 variant="default"
@@ -252,16 +272,48 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* Filter Controls */}
-      <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-muted/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <FilterControls 
-            filters={filters} 
-            onFilterChange={handleFilterChange}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-          />
+      {/* Search Bar (Mobile only) / Filters (Desktop) */}
+      <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          {/* Mobile: Solo búsqueda */}
+          <div className="sm:hidden relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="search-events"
+              name="search"
+              type="text"
+              placeholder="Buscar eventos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-10"
+              data-testid="input-search-main"
+            />
+          </div>
+          
+          {/* Desktop: Filtros completos */}
+          <div className="hidden sm:block">
+            <FilterControls 
+              filters={filters} 
+              onFilterChange={handleFilterChange}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              open={showAdvancedFilters}
+              onOpenChange={setShowAdvancedFilters}
+            />
+          </div>
         </div>
+      </div>
+      
+      {/* Advanced Filters Dialog (Mobile only) */}
+      <div className="sm:hidden">
+        <FilterControls 
+          filters={filters} 
+          onFilterChange={handleFilterChange}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          open={showAdvancedFilters}
+          onOpenChange={setShowAdvancedFilters}
+        />
       </div>
 
       {/* Main Content */}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pgTable, text, timestamp, serial, varchar, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, serial, varchar, index, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 
 // Economic Event Schema
@@ -78,6 +78,20 @@ export const watchlistEvents = pgTable("watchlist_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Event notifications table for individual event reminders
+export const eventNotifications = pgTable("event_notifications", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(), // User identifier for cross-device sync
+  eventId: text("event_id").notNull(), // Event ID
+  eventTimestamp: timestamp("event_timestamp", { withTimezone: true, mode: 'date' }).notNull(), // Event time
+  minutesBefore: integer("minutes_before").notNull(), // 15, 30, or 60 minutes before
+  notificationSent: timestamp("notification_sent", { withTimezone: true, mode: 'date' }), // When notification was sent (null if not sent)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userEventIdx: index("event_notifications_user_event_idx").on(table.userId, table.eventId),
+  timestampIdx: index("event_notifications_timestamp_idx").on(table.eventTimestamp),
+}));
+
 // Cached economic events table
 export const cachedEvents = pgTable("cached_events", {
   id: text("id").primaryKey(), // Unique event ID from API
@@ -113,6 +127,14 @@ export const insertWatchlistEventSchema = createInsertSchema(watchlistEvents).om
   createdAt: true,
 });
 
+export const insertEventNotificationSchema = createInsertSchema(eventNotifications).omit({
+  id: true,
+  createdAt: true,
+  notificationSent: true,
+}).extend({
+  eventTimestamp: z.date(), // Ensure timestamp is a Date object
+});
+
 export const insertCachedEventSchema = createInsertSchema(cachedEvents).omit({
   fetchedAt: true,
   createdAt: true,
@@ -125,5 +147,7 @@ export type WatchlistCountry = typeof watchlistCountries.$inferSelect;
 export type InsertWatchlistCountry = z.infer<typeof insertWatchlistCountrySchema>;
 export type WatchlistEvent = typeof watchlistEvents.$inferSelect;
 export type InsertWatchlistEvent = z.infer<typeof insertWatchlistEventSchema>;
+export type EventNotification = typeof eventNotifications.$inferSelect;
+export type InsertEventNotification = z.infer<typeof insertEventNotificationSchema>;
 export type CachedEvent = typeof cachedEvents.$inferSelect;
 export type InsertCachedEvent = z.infer<typeof insertCachedEventSchema>;

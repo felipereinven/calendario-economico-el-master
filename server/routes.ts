@@ -1,11 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertWatchlistCountrySchema, insertWatchlistEventSchema } from "@shared/schema";
+import { insertWatchlistCountrySchema, insertWatchlistEventSchema, insertEventNotificationSchema } from "@shared/schema";
 import { calculateDateRange } from "./utils/date-range";
 import { categorizeEvent } from "./utils/event-taxonomy";
 import { getInvestingEvents, clearInvestingCache, isValidTimeRange, type TimeRange } from "./services/investing-scraper";
 import { toZonedTime, format } from "date-fns-tz";
+import { z } from "zod";
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -323,6 +324,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing watchlist event:", error);
       res.status(500).json({ error: "Failed to remove watchlist event" });
+    }
+  });
+
+  // Event Notifications API
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const notifications = await storage.getEventNotifications(sessionId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get("/api/notifications/pending", async (req, res) => {
+    try {
+      const now = new Date();
+      const pendingNotifications = await storage.getPendingNotifications(now);
+      res.json(pendingNotifications);
+    } catch (error) {
+      console.error("Error fetching pending notifications:", error);
+      res.status(500).json({ error: "Failed to fetch pending notifications" });
+    }
+  });
+
+  app.get("/api/notifications/:eventId", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const { eventId } = req.params;
+      const notifications = await storage.getEventNotificationsByEvent(sessionId, eventId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching event notifications:", error);
+      res.status(500).json({ error: "Failed to fetch event notifications" });
+    }
+  });
+
+  app.post("/api/notifications", async (req, res) => {
+    try {
+      const userId = req.headers['x-session-id'] as string || 'default';
+      
+      const validated = insertEventNotificationSchema.parse({
+        ...req.body,
+        userId,
+        eventTimestamp: new Date(req.body.eventTimestamp),
+      });
+      const notification = await storage.addEventNotification(validated);
+      res.json(notification);
+    } catch (error) {
+      console.error("Error adding notification:", error);
+      res.status(500).json({ error: "Failed to add notification" });
+    }
+  });
+
+  app.delete("/api/notifications/:eventId/:minutesBefore", async (req, res) => {
+    try {
+      const sessionId = req.headers['x-session-id'] as string || 'default';
+      const { eventId, minutesBefore } = req.params;
+      await storage.removeEventNotification(sessionId, eventId, parseInt(minutesBefore, 10));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing notification:", error);
+      res.status(500).json({ error: "Failed to remove notification" });
     }
   });
 

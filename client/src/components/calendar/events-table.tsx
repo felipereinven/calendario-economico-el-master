@@ -6,7 +6,17 @@ import { formatNumber } from "@/lib/format-numbers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Bell, BellOff } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getSessionId } from "@/lib/session";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { EventCard } from "./event-card";
 
@@ -27,17 +37,149 @@ const impactDots = {
   low: "bg-impact-low",
 };
 
-const impactFires = {
-  high: "🔥🔥🔥",
-  medium: "🔥🔥",
-  low: "🔥",
-};
-
 const impactLabels = {
   high: "Alta volatilidad esperada",
   medium: "Moderada volatilidad esperada",
   low: "Baja volatilidad esperada",
 };
+
+const ImpactFires = ({ level }: { level: "high" | "medium" | "low" }) => {
+  const activeCount = level === "high" ? 3 : level === "medium" ? 2 : 1;
+  
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3].map((i) => (
+        <span
+          key={i}
+          className={i <= activeCount ? "text-xl" : "text-xl opacity-25 grayscale"}
+        >
+          🔥
+        </span>
+      ))}
+    </div>
+  );
+};
+
+// Componente para el botón de notificaciones en la tabla
+function NotificationButton({ event }: { event: EconomicEvent }) {
+  const queryClient = useQueryClient();
+  const sessionId = getSessionId();
+
+  // Fetch notifications for this event
+  const { data: notifications = [] } = useQuery({
+    queryKey: [`/api/notifications/${event.id}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/notifications/${event.id}`, {
+        headers: { 'x-session-id': sessionId },
+      });
+      if (!response.ok) throw new Error('Failed to fetch notifications');
+      return response.json();
+    },
+  });
+
+  // Add notification mutation
+  const addNotification = useMutation({
+    mutationFn: async (minutesBefore: number) => {
+      const response = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-session-id': sessionId,
+        },
+        body: JSON.stringify({
+          eventId: event.id,
+          eventTimestamp: typeof event.eventTimestamp === 'string' 
+            ? event.eventTimestamp 
+            : event.eventTimestamp.toISOString(),
+          minutesBefore,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to add notification');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${event.id}`] });
+    },
+  });
+
+  // Remove notification mutation
+  const removeNotification = useMutation({
+    mutationFn: async (minutesBefore: number) => {
+      const response = await fetch(`/api/notifications/${event.id}/${minutesBefore}`, {
+        method: 'DELETE',
+        headers: { 'x-session-id': sessionId },
+      });
+      if (!response.ok) throw new Error('Failed to remove notification');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/notifications/${event.id}`] });
+    },
+  });
+
+  const hasNotification = (minutes: number) => 
+    notifications.some((n: any) => n.minutesBefore === minutes);
+
+  const toggleNotification = (minutes: number) => {
+    if (hasNotification(minutes)) {
+      removeNotification.mutate(minutes);
+    } else {
+      addNotification.mutate(minutes);
+    }
+  };
+
+  const hasAnyNotification = notifications.length > 0;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          title="Configurar notificaciones"
+        >
+          {hasAnyNotification ? (
+            <Bell className="h-4 w-4 text-primary" />
+          ) : (
+            <BellOff className="h-4 w-4" />
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 z-[200]">
+        <DropdownMenuLabel>Recordatorios</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => toggleNotification(15)}
+          className="cursor-pointer"
+        >
+          <div className="flex items-center justify-between w-full">
+            <span>15 minutos antes</span>
+            {hasNotification(15) && <Bell className="h-4 w-4 text-primary" />}
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => toggleNotification(30)}
+          className="cursor-pointer"
+        >
+          <div className="flex items-center justify-between w-full">
+            <span>30 minutos antes</span>
+            {hasNotification(30) && <Bell className="h-4 w-4 text-primary" />}
+          </div>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => toggleNotification(60)}
+          className="cursor-pointer"
+        >
+          <div className="flex items-center justify-between w-full">
+            <span>60 minutos antes</span>
+            {hasNotification(60) && <Bell className="h-4 w-4 text-primary" />}
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function EventsTable({ events, timezone }: EventsTableProps) {
   const isMobile = useIsMobile();
@@ -218,6 +360,12 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
               >
                 Anterior
               </th>
+              <th
+                scope="col"
+                className="px-4 py-3 text-center text-xs font-semibold text-foreground uppercase tracking-wider w-[80px]"
+              >
+                Notif.
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-background">
@@ -246,12 +394,12 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-center" data-testid={`badge-impact-${index}`}>
                     <div className="flex items-center justify-center">
-                      <span 
-                        className="text-xl cursor-help" 
+                      <div 
+                        className="cursor-help" 
                         title={impactLabels[event.impact]}
                       >
-                        {impactFires[event.impact]}
-                      </span>
+                        <ImpactFires level={event.impact} />
+                      </div>
                     </div>
                   </td>
                   <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-right ${getActualColor(event.actual, event.previous)}`} data-testid={`text-actual-${index}`}>
@@ -262,6 +410,9 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-right text-muted-foreground" data-testid={`text-previous-${index}`}>
                     {formatNumber(event.previous)}
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-center">
+                    <NotificationButton event={event} />
                   </td>
                 </tr>
               );
@@ -274,18 +425,19 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
 
       {/* Controles de paginación */}
       {events.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 px-4 sm:px-0">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Mostrando</span>
-            <span className="font-medium text-foreground">
-              {startIndex + 1}-{Math.min(endIndex, events.length)}
-            </span>
-            <span>de</span>
-            <span className="font-medium text-foreground">{events.length}</span>
-            <span>eventos</span>
-          </div>
+        <div className="flex flex-col gap-3 mt-4 px-4 sm:px-0">
+          {/* Fila 1: Info de resultados y selector de página (solo desktop) */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Mostrando</span>
+              <span className="font-medium text-foreground">
+                {startIndex + 1}-{Math.min(endIndex, events.length)}
+              </span>
+              <span>de</span>
+              <span className="font-medium text-foreground">{events.length}</span>
+              <span>eventos</span>
+            </div>
 
-          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Por página:</span>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
@@ -300,7 +452,21 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
+          {/* Fila 2: Navegación (mobile y desktop) */}
+          <div className="flex items-center justify-between">
+            {/* Info compacta para móvil */}
+            <div className="flex items-center gap-1.5 text-sm sm:hidden">
+              <span className="text-muted-foreground">{startIndex + 1}-{Math.min(endIndex, events.length)}</span>
+              <span className="text-muted-foreground/60">de</span>
+              <span className="font-medium text-foreground">{events.length}</span>
+            </div>
+
+            {/* Spacer para desktop */}
+            <div className="hidden sm:block"></div>
+
+            {/* Controles de navegación */}
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -308,15 +474,16 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
                 data-testid="button-previous-page"
+                className="h-9"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span className="hidden sm:inline ml-1">Anterior</span>
               </Button>
               
-              <div className="flex items-center gap-2 px-2">
-                <span className="text-sm text-muted-foreground">Página</span>
-                <span className="text-sm font-medium text-foreground">
-                  {currentPage} de {totalPages}
+              <div className="flex items-center gap-1.5 px-2 min-w-[80px] justify-center">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Pág.</span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {currentPage}/{totalPages}
                 </span>
               </div>
 
@@ -326,6 +493,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
                 data-testid="button-next-page"
+                className="h-9"
               >
                 <span className="hidden sm:inline mr-1">Siguiente</span>
                 <ChevronRight className="w-4 h-4" />
