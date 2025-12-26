@@ -5,6 +5,7 @@ import { formatInTimeZone } from "date-fns-tz";
 import { formatNumber } from "@/lib/format-numbers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CountryFlag } from "@/components/ui/country-flag";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Bell, BellOff } from "lucide-react";
 import {
@@ -203,11 +204,6 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
     return country?.name || countryCode;
   };
 
-  const getCountryFlag = (countryCode: string) => {
-    const country = countries.find((c) => c.code === countryCode);
-    return country?.flag || "";
-  };
-
   const formatEventDateTime = (event: EconomicEvent) => {
     try {
       let dateTime: Date;
@@ -385,7 +381,7 @@ export function EventsTable({ events, timezone }: EventsTableProps) {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap" data-testid={`text-country-${index}`}>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{getCountryFlag(event.country)}</span>
+                      <CountryFlag countryCode={event.country} className="w-6 h-4 rounded-sm" />
                       <span className="text-sm text-foreground font-medium">{getCountryName(event.country)}</span>
                     </div>
                   </td>

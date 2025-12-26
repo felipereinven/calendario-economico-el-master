@@ -4,7 +4,16 @@ import { formatInTimeZone } from "date-fns-tz";
 import { es } from "date-fns/locale";
 import { formatNumber } from "@/lib/format-numbers";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, TrendingUp, Bell, BellOff } from "lucide-react";
+import { CountryFlag } from "@/components/ui/country-flag";
+import { ChevronDown, ChevronUp, TrendingUp, Bell, BellOff, Info } from "lucide-react";
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -62,6 +71,7 @@ const ImpactFires = ({ level }: { level: "high" | "medium" | "low" }) => {
 export function EventCard({ event, timezone, index }: EventCardProps) {
   const queryClient = useQueryClient();
   const sessionId = getSessionId();
+  const [showDetails, setShowDetails] = useState(false);
 
   // Fetch notifications for this event
   const { data: notifications = [] } = useQuery({
@@ -133,11 +143,6 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
     return country?.name || countryCode;
   };
 
-  const getCountryFlag = (countryCode: string) => {
-    const country = countries.find((c) => c.code === countryCode);
-    return country?.flag || "";
-  };
-
   const formatEventTime = (event: EconomicEvent) => {
     try {
       let dateTime: Date;
@@ -196,9 +201,11 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
   const ImpactIcon = impactIcons[event.impact] || impactIcons.low;
 
   return (
+    <>
     <div 
-      className="flex gap-3 p-4 hover-elevate active-elevate-2 transition-colors border-b border-border last:border-b-0"
+      className="flex gap-3 p-4 hover-elevate active-elevate-2 transition-colors border-b border-border last:border-b-0 cursor-pointer"
       data-testid={`card-event-${index}`}
+      onClick={() => setShowDetails(true)}
     >
       {/* Date & Time Column */}
       <div className="flex flex-col items-center min-w-[70px]">
@@ -208,9 +215,9 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
         <span className="text-lg font-semibold font-mono text-foreground" data-testid={`text-time-${index}`}>
           {formatEventTime(event)}
         </span>
-        <span className="text-lg leading-none mt-0.5">
-          {getCountryFlag(event.country)}
-        </span>
+        <div className="mt-1">
+          <CountryFlag countryCode={event.country} className="w-8 h-5 rounded-sm" />
+        </div>
       </div>
 
       {/* Event Details Column */}
@@ -252,8 +259,9 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
         </div>
       </div>
 
-      {/* Notification Button */}
-      <div className="flex items-center gap-2">
+      {/* Notification & Impact Column */}
+      <div className="flex flex-col items-end justify-start gap-1" onClick={(e) => e.stopPropagation()}>
+        {/* Notification Button */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -308,5 +316,81 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
         </div>
       </div>
     </div>
+
+    {/* Sheet with full event details */}
+    <Sheet open={showDetails} onOpenChange={setShowDetails}>
+      <SheetContent side="bottom" className="h-[85vh] overflow-y-auto z-[300]">
+        <SheetHeader>
+          <SheetTitle className="text-left">Detalles del Evento</SheetTitle>
+          <SheetDescription className="text-left">
+            Información completa del evento económico
+          </SheetDescription>
+        </SheetHeader>
+        
+        <div className="mt-6 space-y-6">
+          {/* Event Title */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Evento</div>
+            <div className="text-base font-medium text-foreground leading-relaxed">{event.event}</div>
+          </div>
+
+          {/* Date and Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Fecha</div>
+              <div className="text-sm font-medium text-foreground">{formatEventDate(event)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Hora</div>
+              <div className="text-sm font-medium font-mono text-foreground">{formatEventTime(event)}</div>
+            </div>
+          </div>
+
+          {/* Country */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">País</div>
+            <div className="flex items-center gap-2">
+              <CountryFlag countryCode={event.country} className="w-8 h-5 rounded-sm" />
+              <span className="text-sm font-medium text-foreground">{getCountryName(event.country)}</span>
+            </div>
+          </div>
+
+          {/* Impact */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Impacto</div>
+            <div className="flex items-center gap-2">
+              <ImpactFires level={event.impact} />
+              <span className="text-sm text-foreground">{impactLabels[event.impact]}</span>
+            </div>
+          </div>
+
+          {/* Economic Data */}
+          <div>
+            <div className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Datos Económicos</div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-card/50 p-3 rounded-lg border border-border">
+                <div className="text-xs text-muted-foreground mb-1">Real</div>
+                <div className={`text-base font-semibold font-mono ${event.actual ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  {formatNumber(event.actual)}
+                </div>
+              </div>
+              <div className="bg-card/50 p-3 rounded-lg border border-border">
+                <div className="text-xs text-muted-foreground mb-1">Pronóstico</div>
+                <div className="text-base font-semibold font-mono text-foreground">
+                  {formatNumber(event.forecast)}
+                </div>
+              </div>
+              <div className="bg-card/50 p-3 rounded-lg border border-border">
+                <div className="text-xs text-muted-foreground mb-1">Anterior</div>
+                <div className="text-base font-semibold font-mono text-foreground">
+                  {formatNumber(event.previous)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+    </>
   );
 }

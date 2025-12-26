@@ -1,6 +1,7 @@
 import { type FilterOptions, countries, economicCategories } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { CountryFlag } from "@/components/ui/country-flag";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -107,7 +108,7 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
                   data-testid={`checkbox-country-${country.code}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">{country.flag}</span>
+                    <CountryFlag countryCode={country.code} className="w-6 h-4 rounded-sm" />
                     <span className="font-mono text-xs text-muted-foreground">{country.code}</span>
                     <span>{country.name}</span>
                   </div>
@@ -226,7 +227,7 @@ function FilterContent({ filters, onFilterChange, searchQuery, onSearchChange }:
             const country = countries.find((c) => c.code === code);
             return country ? (
               <Badge key={code} variant="secondary" className="gap-1">
-                <span className="text-base">{country.flag}</span>
+                <CountryFlag countryCode={country.code} className="w-4 h-3 rounded-sm" />
                 {country.code}
               </Badge>
             ) : null;
