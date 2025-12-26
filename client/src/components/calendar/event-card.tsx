@@ -318,8 +318,8 @@ export function EventCard({ event, timezone, index }: EventCardProps) {
     </div>
 
     {/* Sheet with full event details */}
-    <Sheet open={showDetails} onOpenChange={setShowDetails}>
-      <SheetContent side="bottom" className="h-[85vh] overflow-y-auto z-[300]">
+    <Sheet open={showDetails} onOpenChange={setShowDetails} modal={true}>
+      <SheetContent side="bottom" className="h-[70vh] overflow-y-auto z-[90] [&~div]:z-[85]">
         <SheetHeader>
           <SheetTitle className="text-left">Detalles del Evento</SheetTitle>
           <SheetDescription className="text-left">
