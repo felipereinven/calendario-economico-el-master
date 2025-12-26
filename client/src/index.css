@@ -2,77 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* DARK MODE (Default) - Inspired by modern dark interfaces */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(255,255,255, .12);
+  --badge-outline: rgba(255,255,255, .08);
 
   /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
+  --opaque-button-border-intensity: 8; /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  --elevate-1: rgba(255,255,255, .05);
+  --elevate-2: rgba(255,255,255, .10);
 
-  --background: 0 0% 98%;
+  --background: 0 0% 11%;  /* #1c1c1c - Very dark gray */
 
-  --foreground: 215 20% 15%;
+  --foreground: 0 0% 95%;  /* #f2f2f2 - Almost white */
 
-  --border: 215 15% 90%;
+  --border: 0 0% 25%;  /* #404040 - Medium dark gray */
 
-  --card: 0 0% 100%;
+  --card: 0 0% 17%;  /* #2b2b2b - Dark gray cards */
 
-  --card-foreground: 215 20% 15%;
+  --card-foreground: 0 0% 95%;
 
-  --card-border: 215 15% 94%;
+  --card-border: 0 0% 22%;  /* #383838 - Subtle border */
 
-  --sidebar: 215 25% 97%;
+  --sidebar: 0 0% 15%;  /* #262626 */
 
-  --sidebar-foreground: 215 20% 15%;
+  --sidebar-foreground: 0 0% 95%;
 
-  --sidebar-border: 215 15% 92%;
+  --sidebar-border: 0 0% 23%;
 
-  --sidebar-primary: 215 85% 55%;
+  --sidebar-primary: 38 52% 58%;  /* #CCA45E - Golden/Beige accent */
 
-  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-primary-foreground: 0 0% 10%;
 
-  --sidebar-accent: 215 20% 93%;
+  --sidebar-accent: 0 0% 20%;
 
-  --sidebar-accent-foreground: 215 20% 20%;
+  --sidebar-accent-foreground: 0 0% 95%;
 
-  --sidebar-ring: 215 85% 55%;
+  --sidebar-ring: 38 52% 58%;
 
-  --popover: 215 20% 95%;
+  --popover: 0 0% 18%;  /* #2e2e2e */
 
-  --popover-foreground: 215 20% 15%;
+  --popover-foreground: 0 0% 95%;
 
-  --popover-border: 215 15% 88%;
+  --popover-border: 0 0% 26%;
 
-  --primary: 215 85% 55%;
+  --primary: 38 52% 58%;  /* #CCA45E - Golden/Beige primary */
 
-  --primary-foreground: 0 0% 98%;
+  --primary-foreground: 0 0% 10%;
 
-  --secondary: 215 15% 92%;
+  --secondary: 0 0% 25%;  /* #404040 */
 
-  --secondary-foreground: 215 20% 20%;
+  --secondary-foreground: 0 0% 95%;
 
-  --muted: 215 18% 94%;
+  --muted: 0 0% 22%;  /* #383838 */
 
-  --muted-foreground: 215 15% 45%;
+  --muted-foreground: 0 0% 65%;  /* #a6a6a6 - Light gray text */
 
-  --accent: 215 25% 96%;
+  --accent: 0 0% 20%;  /* #333333 */
 
-  --accent-foreground: 215 20% 25%;
+  --accent-foreground: 0 0% 95%;
 
   --destructive: 0 70% 55%;
 
   --destructive-foreground: 0 0% 98%;
 
-  --input: 215 20% 75%;
-  --ring: 215 85% 55%;
-  --chart-1: 215 85% 48%;
-  --chart-2: 145 60% 45%;
-  --chart-3: 45 90% 50%;
+  --input: 0 0% 30%;  /* #4d4d4d */
+  --ring: 38 52% 58%;
+  --chart-1: 38 52% 58%;
+  --chart-2: 145 60% 50%;
+  --chart-3: 200 80% 50%;
   --chart-4: 280 65% 55%;
   --chart-5: 25 80% 52%;
 
@@ -80,21 +80,21 @@
   --font-serif: Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Consolas', monospace;
   --radius: .5rem; /* 8px */
-  --shadow-2xs: 0px 2px 0px 0px hsl(215 15% 15% / 0.03);
-  --shadow-xs: 0px 1px 2px 0px hsl(215 15% 15% / 0.05);
-  --shadow-sm: 0px 1px 3px 0px hsl(215 15% 15% / 0.1), 0px 1px 2px -1px hsl(215 15% 15% / 0.1);
-  --shadow: 0px 1px 3px 0px hsl(215 15% 15% / 0.1), 0px 1px 2px -1px hsl(215 15% 15% / 0.1);
-  --shadow-md: 0px 4px 6px -1px hsl(215 15% 15% / 0.1), 0px 2px 4px -2px hsl(215 15% 15% / 0.1);
-  --shadow-lg: 0px 10px 15px -3px hsl(215 15% 15% / 0.1), 0px 4px 6px -4px hsl(215 15% 15% / 0.1);
-  --shadow-xl: 0px 20px 25px -5px hsl(215 15% 15% / 0.1), 0px 8px 10px -6px hsl(215 15% 15% / 0.1);
-  --shadow-2xl: 0px 25px 50px -12px hsl(215 15% 15% / 0.25);
+  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.15);
+  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.3);
+  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.4), 0px 1px 2px -1px hsl(0 0% 0% / 0.3);
+  --shadow-md: 0px 4px 6px -1px hsl(0 0% 0% / 0.4), 0px 2px 4px -2px hsl(0 0% 0% / 0.3);
+  --shadow-lg: 0px 10px 15px -3px hsl(0 0% 0% / 0.4), 0px 4px 6px -4px hsl(0 0% 0% / 0.3);
+  --shadow-xl: 0px 20px 25px -5px hsl(0 0% 0% / 0.4), 0px 8px 10px -6px hsl(0 0% 0% / 0.3);
+  --shadow-2xl: 0px 25px 50px -12px hsl(0 0% 0% / 0.5);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
   /* Impact level colors for economic events */
-  --impact-high: 0 70% 55%;
-  --impact-medium: 45 90% 55%;
-  --impact-low: 145 60% 50%;
+  --impact-high: 0 70% 55%;  /* Red */
+  --impact-medium: 45 90% 55%;  /* Orange/Yellow */
+  --impact-low: 145 60% 50%;  /* Green */
 
   /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
 
@@ -127,119 +127,45 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-.dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+/* LIGHT MODE (Optional - can be activated with .light class) */
+.light {
+  --button-outline: rgba(0,0,0, .10);
+  --badge-outline: rgba(0,0,0, .05);
 
-  --opaque-button-border-intensity: 9;  /* In terms of percentages */
+  --opaque-button-border-intensity: -8;
 
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(255,255,255, .04);
-  --elevate-2: rgba(255,255,255, .09);
+  --elevate-1: rgba(0,0,0, .03);
+  --elevate-2: rgba(0,0,0, .08);
 
-  --background: 215 20% 12%;
-
-  --foreground: 0 0% 95%;
-
-  --border: 215 15% 25%;
-
-  --card: 215 18% 16%;
-
-  --card-foreground: 0 0% 95%;
-
-  --card-border: 215 15% 22%;
-
-  --sidebar: 215 16% 20%;
-
-  --sidebar-foreground: 0 0% 95%;
-
-  --sidebar-border: 215 15% 26%;
-
-  --sidebar-primary: 215 85% 55%;
-
+  --background: 0 0% 98%;
+  --foreground: 215 20% 15%;
+  --border: 215 15% 90%;
+  --card: 0 0% 100%;
+  --card-foreground: 215 20% 15%;
+  --card-border: 215 15% 94%;
+  --sidebar: 215 25% 97%;
+  --sidebar-foreground: 215 20% 15%;
+  --sidebar-border: 215 15% 92%;
+  --sidebar-primary: 38 52% 58%;
   --sidebar-primary-foreground: 0 0% 98%;
-
-  --sidebar-accent: 215 18% 24%;
-
-  --sidebar-accent-foreground: 0 0% 95%;
-
-  --sidebar-ring: 215 85% 55%;
-
-  --popover: 215 16% 22%;
-
-  --popover-foreground: 0 0% 95%;
-
-  --popover-border: 215 15% 28%;
-
-  --primary: 215 85% 55%;
-
+  --sidebar-accent: 215 20% 93%;
+  --sidebar-accent-foreground: 215 20% 20%;
+  --sidebar-ring: 38 52% 58%;
+  --popover: 215 20% 95%;
+  --popover-foreground: 215 20% 15%;
+  --popover-border: 215 15% 88%;
+  --primary: 38 52% 58%;
   --primary-foreground: 0 0% 98%;
-
-  --secondary: 215 12% 28%;
-
-  --secondary-foreground: 0 0% 95%;
-
-  --muted: 215 14% 26%;
-
-  --muted-foreground: 0 0% 70%;
-
-  --accent: 215 14% 24%;
-
-  --accent-foreground: 0 0% 90%;
-
+  --secondary: 215 15% 92%;
+  --secondary-foreground: 215 20% 20%;
+  --muted: 215 18% 94%;
+  --muted-foreground: 215 15% 45%;
+  --accent: 215 25% 96%;
+  --accent-foreground: 215 20% 25%;
   --destructive: 0 70% 55%;
-
   --destructive-foreground: 0 0% 98%;
-
-  --input: 215 15% 40%;
-  --ring: 215 85% 55%;
-  --chart-1: 215 85% 62%;
-  --chart-2: 145 60% 58%;
-  --chart-3: 45 90% 62%;
-  --chart-4: 280 65% 65%;
-  --chart-5: 25 80% 60%;
-
-  --shadow-2xs: 0px 2px 0px 0px hsl(215 20% 5% / 0.4);
-  --shadow-xs: 0px 1px 2px 0px hsl(215 20% 5% / 0.5);
-  --shadow-sm: 0px 1px 3px 0px hsl(215 20% 5% / 0.6), 0px 1px 2px -1px hsl(215 20% 5% / 0.6);
-  --shadow: 0px 1px 3px 0px hsl(215 20% 5% / 0.6), 0px 1px 2px -1px hsl(215 20% 5% / 0.6);
-  --shadow-md: 0px 4px 6px -1px hsl(215 20% 5% / 0.6), 0px 2px 4px -2px hsl(215 20% 5% / 0.6);
-  --shadow-lg: 0px 10px 15px -3px hsl(215 20% 5% / 0.7), 0px 4px 6px -4px hsl(215 20% 5% / 0.7);
-  --shadow-xl: 0px 20px 25px -5px hsl(215 20% 5% / 0.7), 0px 8px 10px -6px hsl(215 20% 5% / 0.7);
-  --shadow-2xl: 0px 25px 50px -12px hsl(215 20% 5% / 0.8);
-
-  /* Impact level colors for economic events */
-  --impact-high: 0 70% 60%;
-  --impact-medium: 45 90% 60%;
-  --impact-low: 145 60% 55%;
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --input: 215 20% 75%;
+  --ring: 38 52% 58%;
 }
 
 @layer base {
@@ -361,5 +287,15 @@
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
+  }
+
+  /* Hide scrollbar for period tabs in mobile */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
 }

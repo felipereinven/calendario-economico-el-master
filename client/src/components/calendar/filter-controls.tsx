@@ -278,7 +278,7 @@ export function FilterControls({ filters, onFilterChange, searchQuery, onSearchC
   // Mobile: Usar Dialog con botón
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto z-[200]">
         <DialogHeader>
           <DialogTitle>Filtros Avanzados</DialogTitle>
           <DialogDescription>

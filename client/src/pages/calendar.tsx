@@ -7,9 +7,8 @@ import { NotificationSettings } from "@/components/calendar/notification-setting
 import { useNotifications } from "@/hooks/use-notifications";
 import { useEventNotifications } from "@/hooks/use-event-notifications";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, RefreshCw, Clock, Calendar, Search, SlidersHorizontal } from "lucide-react";
+import { Loader2, RefreshCw, Clock, Calendar, SlidersHorizontal } from "lucide-react";
 import { format } from "date-fns";
 import { getCalendarDateRange } from "@/lib/date-utils";
 import { getSessionId } from "@/lib/session";
@@ -272,22 +271,65 @@ export default function CalendarPage() {
         </div>
       )}
 
-      {/* Search Bar (Mobile only) / Filters (Desktop) */}
+      {/* Time Period Tabs (Mobile only) / Filters (Desktop) */}
       <div className="sticky top-[68px] sm:top-[77px] z-[99] border-b bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          {/* Mobile: Solo búsqueda */}
-          <div className="sm:hidden relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="search-events"
-              name="search"
-              type="text"
-              placeholder="Buscar eventos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10"
-              data-testid="input-search-main"
-            />
+          {/* Mobile: Tabs de período de tiempo */}
+          <div className="sm:hidden flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+            <Button
+              variant={filters.dateRange === "yesterday" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "yesterday" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-yesterday"
+            >
+              Ayer
+            </Button>
+            <Button
+              variant={filters.dateRange === "today" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "today" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-today"
+            >
+              Hoy
+            </Button>
+            <Button
+              variant={filters.dateRange === "tomorrow" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "tomorrow" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-tomorrow"
+            >
+              Mañana
+            </Button>
+            <Button
+              variant={filters.dateRange === "thisWeek" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "thisWeek" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-thisWeek"
+            >
+              Esta Semana
+            </Button>
+            <Button
+              variant={filters.dateRange === "nextWeek" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "nextWeek" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-nextWeek"
+            >
+              Próxima Semana
+            </Button>
+            <Button
+              variant={filters.dateRange === "thisMonth" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange({ dateRange: "thisMonth" })}
+              className="shrink-0 text-xs"
+              data-testid="button-period-thisMonth"
+            >
+              Este Mes
+            </Button>
           </div>
           
           {/* Desktop: Filtros completos */}
